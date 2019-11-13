@@ -1,0 +1,37 @@
+#include <Servo.h>
+
+Servo servoLeft;
+Servo servoRight;
+
+const int rightServoPin = 13;       
+const int leftServoPin = 12;
+
+void move_servos(int speed_left, int speed_right)
+{
+    servoLeft.write(speed_left);
+    servoRight.write(speed_right);
+}
+
+void setup() 
+{
+  Serial.begin(9600);
+  servoLeft.attach(leftServoPin);
+  servoRight.attach(rightServoPin);
+  
+  // Stop the servo motors
+  servoLeft.write(90);
+  servoRight.write(90);
+}
+
+int counter = 0;
+
+void loop()
+{
+    move_servos(0, 180);
+
+    //if right sensor detects line, steer left
+
+    
+    //if left sensor detects line, steer right
+}
+
