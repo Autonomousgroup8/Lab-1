@@ -35,7 +35,6 @@ void loop()
   //if right sensor detects line, steer left
   //ThrottleL = ThrottleL-5;
 
-    
   //if left sensor detects line, steer right
   //THrottleR = ThrottleR-5;
 
@@ -44,4 +43,6 @@ void loop()
   //if both sensors do not detect a line, drive straight (do nothing)
 
   move_servos(ThrottleL, ThrottleR);
+  delay(1000);
+  
 }
