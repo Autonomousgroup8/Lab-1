@@ -52,19 +52,20 @@ void setup()
 
 void loop()
 {    
-    int Distance;
-    Distance = sonar.ping_cm();
-    if(Distance < MIN_DISTANCE){
+  delay(500);
+  int Distance;
+  Distance = sonar.ping_cm();
+  if(Distance < MIN_DISTANCE){
     baseSpeed = 90; //Stand still if too close
   }
-  else if (Distance > MAX_DISTANCE){
+  else if (Distance > MAX_DISTANCE || Distance == 0){
     baseSpeed = 180; //Maximum speed if too far away
   }
   else{
     baseSpeed = 90 + (Distance - idealDistance + MIN_DISTANCE/2)*9; //Variable speed if inbetween
   }
-baseSpeed = (180 - baseSpeed)/180 ;
-    
+baseSpeed = (baseSpeed)/90 - 1 ;
+  
   // Read from IR sensors
     IR_left = analogRead(pin_IR_left);
     IR_right = analogRead(pin_IR_right);
