@@ -4,17 +4,19 @@
 #define TRIGGER_PIN  9
 #define ECHO_PIN     9
 #define MAX_DISTANCE 200
-#define pin_Servo_left 13;
-#define pin_Servo_right 12;
-#define pin_IR_left 0;
-#define pin_IR_right 1;
-#define threshold 700;
+#define pin_Servo_left 13
+#define pin_Servo_right 12
+#define pin_IR_left 0
+#define pin_IR_right 1
+#define threshold 700
 
 Servo servo_left;
 Servo servo_right;
 
 int IR_left = 0;
 int IR_right = 0;
+int leftThreshold;
+int rightThreshold;
 
 const float alpha = 0.001;
 unsigned long StartTime = 0;
@@ -37,7 +39,11 @@ void setup()
 	Serial.begin(9600);
 	servo_left.attach(pin_Servo_left);
 	servo_right.attach(pin_Servo_right);
-  
+	
+	// Setup threshold
+	leftThreshold = analogRead(pin_IR_left) + 50;
+	rightThreshold = analogRead(pin_IR_right) + 50;
+	
   // Init servo motors with 0
 	servo_right.write(90);
 	servo_right.write(90);
@@ -49,13 +55,13 @@ void loop()
     IR_left = analogRead(pin_IR_left);
     IR_right = analogRead(pin_IR_right);
     
-    if(IR_left < threshold && IR_right < threshold){
+    if(IR_left < leftThreshold && IR_right < rightThreshold){
 		// If no line is detected
 		
 		StartTime = 0;
       	move_servos(baseSpeed, 0);
 		
-	}else if (IR_left > threshold && IR_right < threshold) {
+	}else if (IR_left > leftThreshold && IR_right < rightThreshold) {
 		// if line is detected by left side
 		
 		// if StartTime is not set set it
@@ -65,7 +71,7 @@ void loop()
 		
 		move_servos(baseSpeed, -alpha*(millis() - StartTime));
 		
-	}else if (IR_left < threshold && IR_right > threshold) {
+	}else if (IR_left < leftThreshold && IR_right > rightThreshold) {
 		// if line is detected by right side
 		
 		// if StartTime is not set set it
@@ -75,7 +81,7 @@ void loop()
 		
 		move_servos(baseSpeed, alpha*(millis() - StartTime));
 		
-	}else if(IR_left > threshold && IR_right > threshold){
+	}else if(IR_left > leftThreshold && IR_right > rightThreshold){
 		// if both detect a line (consider it as no line for now)
 		
 		StartTime = 0;
