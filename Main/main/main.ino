@@ -16,11 +16,13 @@ const int pin_IR_right = 1;
 
 int IR_left = 0;
 int IR_right = 0;
+int leftThreshold;
+int rightThreshold;
 
 const int threshhold = 700;
-const float alpha = 0.001;
+const float alpha = 0.005;
 unsigned long StartTime = 0;
-float baseSpeed = 0.5;
+float baseSpeed = 0.3;
 
 void move_servos(float baseSpeed, float offset)
 {
@@ -43,6 +45,9 @@ void setup()
   // Init servo motors with 0
   servo_right.write(90);
   servo_right.write(90);
+
+  leftThreshold = IR_left + 50;
+  rightThreshold = IR_right + 50;
 }
 
 void loop()
@@ -51,13 +56,13 @@ void loop()
     IR_left = analogRead(pin_IR_left);
     IR_right = analogRead(pin_IR_right);
     
-    if(IR_left < threshhold && IR_right < threshhold){
+    if(IR_left < leftThreshhold && IR_right < rightThreshhold){
     // If no line is detected
     
     StartTime = 0;
         move_servos(baseSpeed, 0);
     
-  }else if (IR_left > threshhold && IR_right < threshhold) {
+  }else if (IR_left > leftThreshhold && IR_right < rightThreshhold) {
     // if line is detected by left side
     
     // if StartTime is not set set it
@@ -67,7 +72,7 @@ void loop()
     
     move_servos(baseSpeed, -alpha*(millis() - StartTime));
     
-  }else if (IR_left < threshhold && IR_right > threshhold) {
+  }else if (IR_left < leftThreshhold && IR_right > rightThreshhold) {
     // if line is detected by right side
     
     // if StartTime is not set set it
@@ -77,7 +82,7 @@ void loop()
     
     move_servos(baseSpeed, alpha*(millis() - StartTime));
     
-  }else if(IR_left > threshhold && IR_right > threshhold){
+  }else if(IR_left > leftThreshhold && IR_right > rightThreshhold){
     // if both detect a line (consider it as no line for now)
     
     StartTime = 0;
