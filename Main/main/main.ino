@@ -26,8 +26,8 @@ float baseSpeed = 0.05;
 void move_servos(float baseSpeed, float offset)
 {
 
-  float speed_left = baseSpeed + offset;
-  float speed_right = -baseSpeed + offset;
+  float speed_left = baseSpeed +  0.07*offset + 0.10*offset^2;
+  float speed_right = -baseSpeed + 0.07*offset + 0.10*offset^2;
 
   speed_left = constrain(speed_left, -1, 1);
   speed_right = constrain(speed_right, -1, 1);
