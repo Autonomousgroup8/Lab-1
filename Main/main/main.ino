@@ -5,47 +5,83 @@
 #define ECHO_PIN     9
 #define MAX_DISTANCE 200
 
-Servo servoLeft;
-Servo servoRight;
+Servo servo_left;
+Servo servo_right;
 
-const int rightServoPin = 13;       
-const int leftServoPin = 12;
+const int pin_Servo_left = 13;       
+const int pin_Servo_right = 12;
 
-void move_servos(int speed_left, int speed_right)
+const int pin_IR_left = 0;       
+const int pin_IR_right = 1;
+
+int IR_left = 0;
+int IR_right = 0;
+
+const int threshhold = 700;
+const float alpha = 0.001;
+unsigned long StartTime = 0;
+float baseSpeed = 0.5;
+
+void move_servos(float baseSpeed, float offset)
 {
-    servoLeft.write(180 - speed_left);
-    servoRight.write(speed_right);
+  float speed_left = baseSpeed + offset;
+  float speed_right = -baseSpeed + offset;
+
+  speed_left = constrain(speed_left, -1, 1);
+  speed_right = constrain(speed_right, -1, 1);
+    
+    servo_left.write(90+speed_left*90);
+    servo_right.write(90+speed_right*90);
 }
 
 void setup() 
 {
   Serial.begin(9600);
-  servoLeft.attach(leftServoPin);
-  servoRight.attach(rightServoPin);
+  servo_left.attach(pin_Servo_left);
+  servo_right.attach(pin_Servo_right);
   
-  // Stop the servo motors
-  servoLeft.write(90);
-  servoRight.write(90);
+  // Init servo motors with 0
+  servo_right.write(90);
+  servo_right.write(90);
 }
 
 void loop()
-{
-  int ThrottleR, ThrottleL;
-  //Start driving (Max throttle is 180, 90 is standstill)
-  ThrottleL = 180;
-  ThrottleR = 180;
-  
-  //if right sensor detects line, steer left
-  //ThrottleL = ThrottleL-5;
-
-  //if left sensor detects line, steer right
-  //THrottleR = ThrottleR-5;
-
-  //if both sensors detect line, drive straight (do nothing)
-
-  //if both sensors do not detect a line, drive straight (do nothing)
-
-  move_servos(ThrottleL, ThrottleR);
-  delay(1000);
-  
+{    
+  // Read from IR sensors
+    IR_left = analogRead(pin_IR_left);
+    IR_right = analogRead(pin_IR_right);
+    
+    if(IR_left < threshhold && IR_right < threshhold){
+    // If no line is detected
+    
+    StartTime = 0;
+        move_servos(baseSpeed, 0);
+    
+  }else if (IR_left > threshhold && IR_right < threshhold) {
+    // if line is detected by left side
+    
+    // if StartTime is not set set it
+    if(!StartTime){
+      StartTime = millis();
+    }
+    
+    move_servos(baseSpeed, -alpha*(millis() - StartTime));
+    
+  }else if (IR_left < threshhold && IR_right > threshhold) {
+    // if line is detected by right side
+    
+    // if StartTime is not set set it
+    if(!StartTime){
+      StartTime = millis();
+    }
+    
+    move_servos(baseSpeed, alpha*(millis() - StartTime));
+    
+  }else if(IR_left > threshhold && IR_right > threshhold){
+    // if both detect a line (consider it as no line for now)
+    
+    StartTime = 0;
+    move_servos(baseSpeed, 0);
+      // Intersection protocol
+    }
 }
