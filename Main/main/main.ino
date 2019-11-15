@@ -20,13 +20,12 @@ const int pin_IR_right = 1;
 int IR_left = 0;
 int IR_right = 0;
 
-const float base_speed = 67.5;
 const int idealDistance = (MAX_DISTANCE + MIN_DISTANCE)/2;
 const int threshhold = 700;
 const float alpha = 0.001;
 unsigned long StartTime = 0;
 float baseSpeed = 0.5;
-
+float baseSpeedMod = 0;
 void move_servos(float baseSpeed, float offset)
 {
   float speed_left = baseSpeed + offset;
@@ -53,18 +52,19 @@ void setup()
 void loop()
 {    
   int Distance;
+  float localSpeed;
   Distance = sonar.ping_cm();
   if(Distance < MIN_DISTANCE){
-    baseSpeed = 90; //Stand still if too close
+    baseSpeedMod = 90; //Stand still if too close
   }
   else if (Distance > MAX_DISTANCE || Distance == 0){
-    baseSpeed = 180; //Maximum speed if too far away
+    baseSpeedMod = 180; //Maximum speed if too far away
   }
   else{
-    baseSpeed = 90 + (Distance - idealDistance + MIN_DISTANCE/2)*9; //Variable speed if inbetween
+    baseSpeedMod = 90 + (Distance - idealDistance + MIN_DISTANCE/2)*9; //Variable speed if inbetween
   }
-baseSpeed = -((baseSpeed)/90 - 1) ;
-  
+baseSpeedMod = -((baseSpeedMod)/90 - 1) ;
+  localSpeed = baseSpeed * baseSpeedMod;
   // Read from IR sensors
     IR_left = analogRead(pin_IR_left);
     IR_right = analogRead(pin_IR_right);
@@ -83,7 +83,7 @@ baseSpeed = -((baseSpeed)/90 - 1) ;
       StartTime = millis();
     }
     
-    move_servos(baseSpeed, -alpha*(millis() - StartTime));
+    move_servos(localSpeed, -alpha*(millis() - StartTime));
     
   }else if (IR_left < threshhold && IR_right > threshhold) {
     // if line is detected by right side
@@ -93,13 +93,20 @@ baseSpeed = -((baseSpeed)/90 - 1) ;
       StartTime = millis();
     }
     
-    move_servos(baseSpeed, alpha*(millis() - StartTime));
+    move_servos(localSpeed, alpha*(millis() - StartTime));
     
   }else if(IR_left > threshhold && IR_right > threshhold){
     // if both detect a line (consider it as no line for now)
     
     StartTime = 0;
-    move_servos(baseSpeed, 0);
+    move_servos(localSpeed, 0);
       // Intersection protocol
     }
+    Serial.println("Local speed: ");
+    Serial.println(localSpeed);
+    Serial.println("Alpha: ");
+    Serial.println(alpha);
+    Serial.println("BaseSpeedMod: ");
+    Serial.println(baseSpeedMod);
+    
 }
