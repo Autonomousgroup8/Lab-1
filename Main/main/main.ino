@@ -52,7 +52,6 @@ void setup()
 
 void loop()
 {    
-  delay(500);
   int Distance;
   Distance = sonar.ping_cm();
   if(Distance < MIN_DISTANCE){
