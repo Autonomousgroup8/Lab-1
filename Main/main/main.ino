@@ -14,8 +14,6 @@ const int pin_Servo_right = 12;
 const int pin_IR_left = 0;       
 const int pin_IR_right = 1;
 
-boolean turn = false;
-
 int IR_left = 0;
 int IR_right = 0;
 int leftThreshold;
@@ -61,14 +59,10 @@ void loop()
     IR_left = analogRead(pin_IR_left);
     IR_right = analogRead(pin_IR_right);
 
-    if(turn == true){
-      move_servos(baseSpeed, 0);
-      delay(100);
-      }
+  
     
     if(IR_left < leftThreshold && IR_right < rightThreshold){
     // If no line is detected
-    
     StartTime = 0;
     move_servos(baseSpeed, 0);
     
@@ -79,13 +73,9 @@ void loop()
     if(!StartTime){
       StartTime = millis();
     }
-
-    while(IR_right < rightThreshold){
-      StartTime = 0;      
+    
       move_servos(baseSpeed, -alpha*(millis() - StartTime));
-      IR_right = analogRead(pin_IR_right);
-      turn = true;
-    } 
+  
     
     }else if (IR_left < leftThreshold && IR_right > rightThreshold) {
     // if line is detected by right side
@@ -95,12 +85,8 @@ void loop()
       StartTime = millis();
     }
 
-    while(IR_left < leftThreshold){
-      StartTime = 0;
       move_servos(baseSpeed, alpha*(millis() - StartTime));
-      IR_left = analogRead(pin_IR_left);
-      turn = true;
-     }
+ 
     
     }else if(IR_left > leftThreshold && IR_right > rightThreshold){
     // if both detect a line (consider it as no line for now)
