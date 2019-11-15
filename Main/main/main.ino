@@ -3,8 +3,11 @@
 
 #define TRIGGER_PIN  9
 #define ECHO_PIN     9
-#define MAX_DISTANCE 200
+#define MAX_DISTANCE 20
+#define MIN_DISTANCE 10
+#define SONAR_DISTANCE 200
 
+NewPing sonar(TRIGGER_PIN, ECHO_PIN, SONAR_DISTANCE);
 Servo servo_left;
 Servo servo_right;
 
@@ -17,6 +20,8 @@ const int pin_IR_right = 1;
 int IR_left = 0;
 int IR_right = 0;
 
+const float base_speed = 67.5;
+const int idealDistance = (MAX_DISTANCE + MIN_DISTANCE)/2;
 const int threshhold = 700;
 const float alpha = 0.001;
 unsigned long StartTime = 0;
@@ -47,6 +52,19 @@ void setup()
 
 void loop()
 {    
+    int Distance;
+    Distance = sonar.ping_cm();
+    if(Distance < MIN_DISTANCE){
+    baseSpeed = 90; //Stand still if too close
+  }
+  else if (Distance > MAX_DISTANCE){
+    baseSpeed = 180; //Maximum speed if too far away
+  }
+  else{
+    baseSpeed = 90 + (Distance - idealDistance + MIN_DISTANCE/2)*9; //Variable speed if inbetween
+  }
+baseSpeed = (180 - baseSpeed)/180 ;
+    
   // Read from IR sensors
     IR_left = analogRead(pin_IR_left);
     IR_right = analogRead(pin_IR_right);
