@@ -63,7 +63,7 @@ void loop()
   else{
     baseSpeed = 90 + (Distance - idealDistance + MIN_DISTANCE/2)*9; //Variable speed if inbetween
   }
-baseSpeed = (baseSpeed)/90 - 1 ;
+baseSpeed = -((baseSpeed)/90 - 1) ;
   
   // Read from IR sensors
     IR_left = analogRead(pin_IR_left);
