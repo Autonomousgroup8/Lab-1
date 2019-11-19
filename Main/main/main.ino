@@ -22,7 +22,15 @@ int rightThreshold;
 
 const float alpha = 0.001;
 unsigned long StartTime = 0;
+unsigned long uncertainTime = 0;
 float baseSpeed = 0.5;
+
+const int speedFilterLength = 10;
+const int steeringFilterLength = 10;
+float speed[speedFilterLength];
+float steering[steeringFilterLength];
+int speedIndex = 0;
+int steeringIndex = 0;
 
 void move_servos(float baseSpeed, float offset)
 {
@@ -36,6 +44,16 @@ void move_servos(float baseSpeed, float offset)
     servo_right.write(90+speed_right*90);
 }
 
+float avg(float array[], int length){
+	int sum = 0;
+	
+	for(int i = 0; i<length; i++){
+		sum += array[i];
+	}
+	
+	return sum/length;
+}
+
 void setup() 
 {
 	Serial.begin(9600);
@@ -46,7 +64,15 @@ void setup()
 	leftThreshold = analogRead(pin_IR_left) + 50;
 	rightThreshold = analogRead(pin_IR_right) + 50;
 	
-  // Init servo motors with 0
+	for(int i = 0; i < steeringFilterLength; i++){
+		speed[i] = baseSpeed;
+	}
+	
+	for(int i = 0; i < speedFilterLength; i++){
+		steering[i] = 0;
+	}
+	
+	// Init servo motors with 0
 	servo_right.write(90);
 	servo_right.write(90);
 }
@@ -58,36 +84,31 @@ void loop()
     IR_right = analogRead(pin_IR_right);
     
     if(IR_left < leftThreshold && IR_right < rightThreshold){
-		// If no line is detected
-		
-		StartTime = 0;
-      	move_servos(baseSpeed, 0);
+		// No line detected
+		speed[speedIndex] = baseSpeed;
+		steering[steeringIndex] = 0;
 		
 	}else if (IR_left > leftThreshold && IR_right < rightThreshold) {
-		// if line is detected by left side
-		
-		// if StartTime is not set set it
-		if(!StartTime){
-			StartTime = millis();
-		}
-		
-		move_servos(baseSpeed, -alpha*(millis() - StartTime));
-		
+		// Line detected left		
+	
+		speed[speedIndex] = 0.05;
+		steering[steeringIndex] = -1;
+
 	}else if (IR_left < leftThreshold && IR_right > rightThreshold) {
-		// if line is detected by right side
+		// Line detected right
 		
-		// if StartTime is not set set it
-		if(!StartTime){
-			StartTime = millis();
-		}
-		
-		move_servos(baseSpeed, alpha*(millis() - StartTime));
+		speed[speedIndex] = 0.05;
+		steering[steeringIndex] = 1;
 		
 	}else if(IR_left > leftThreshold && IR_right > rightThreshold){
-		// if both detect a line (consider it as no line for now)
+		// Line detected both left right
 		
-		StartTime = 0;
-		move_servos(baseSpeed, 0);
-      // Intersection protocol
+		speed[speedIndex] = baseSpeed;
+		steering[steeringIndex] = 0;
     }
+	
+	move_servos(avg(speed, speedFilterLength), avg(steering, steeringFilterLength));
+	
+	speedIndex = (speedIndex + 1) % speedFilterLength;
+	steeringIndex = (steeringIndex + 1) % steeringFilterLength;
 }
