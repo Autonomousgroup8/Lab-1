@@ -1,13 +1,15 @@
 #include <Servo.h>
 #include <NewPing.h>
 
+#define MAX_DISTANCE 200
+
 #define TRIGGER_PIN  9
 #define ECHO_PIN     9
-#define MAX_DISTANCE 200
 #define pin_Servo_left 13
 #define pin_Servo_right 12
 #define pin_IR_left 0
 #define pin_IR_right 1
+
 #define threshold 700
 
 Servo servo_left;
