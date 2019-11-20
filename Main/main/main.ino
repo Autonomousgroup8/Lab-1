@@ -21,7 +21,7 @@ int rightThreshold;
 int turnleft = 0;
 int turnright = 0;
 
-const float alpha = 0.005;
+const float alpha = 0.0005;
 unsigned long StartTime = 0;
 float baseSpeed = -0.05;
 
@@ -69,7 +69,7 @@ void loop()
       while(IR_left > leftThreshold){
         move_servos(baseSpeed, 0);
         IR_left = analogRead(pin_IR_left);
-        Serial.println("Hallo");
+        //Serial.println("Hallo");
         }
     }
     if(IR_left < leftThreshold && turnleft > 4){
@@ -79,7 +79,7 @@ void loop()
       while(IR_right > rightThreshold){
         move_servos(baseSpeed, 0);
         IR_right = analogRead(pin_IR_right);
-        Serial.println("Hallo");
+        //Serial.println("Hallo");
         }
     }
 
@@ -104,7 +104,6 @@ void loop()
     }
     move_servos(baseSpeed, -alpha*(millis() - StartTime));
   
-    
     }else if (IR_left < leftThreshold && IR_right > rightThreshold) {
     // if line is detected by right side
     turnright ++;
@@ -115,7 +114,6 @@ void loop()
 
     move_servos(baseSpeed, alpha*(millis() - StartTime));
  
-    
     }else if(IR_left > leftThreshold && IR_right > rightThreshold && turnright == 0 && turnleft == 0){
     // if both detect a line (consider it as no line for now)
     
@@ -123,14 +121,14 @@ void loop()
     move_servos(baseSpeed, 0);
       // Intersection protocol
     }
-    Serial.print("Left sensor value: ");
-    Serial.print(IR_left);
-    Serial.print("; right sensor value: ");
-    Serial.print(IR_right);
-    Serial.print("; CountLeft: ");
-    Serial.print(turnleft);
-    Serial.print("; CountRight: ");
-    Serial.print(turnright);
-    Serial.println();
+    //Serial.print("Left sensor value: ");
+    //Serial.print(IR_left);
+    //Serial.print("; right sensor value: ");
+    //Serial.print(IR_right);
+    //Serial.print("; CountLeft: ");
+    //Serial.print(turnleft);
+    //Serial.print("; CountRight: ");
+    //Serial.print(turnright);
+    //Serial.println();
     
 }
