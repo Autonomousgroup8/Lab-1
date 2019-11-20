@@ -47,8 +47,8 @@ void setup()
   IR_left = analogRead(pin_IR_left);
   IR_right = analogRead(pin_IR_right);
 
-  leftThreshold = IR_left + 50;
-  rightThreshold = IR_right + 50;
+  leftThreshold = IR_left + 250;
+  rightThreshold = IR_right + 250;
   
   // Init servo motors with 0
   servo_right.write(90);
@@ -64,12 +64,23 @@ void loop()
     //Probeersel sturen
     if(IR_right < rightThreshold && turnright > 4){
       turnright = 0;
-      move_servos(baseSpeed, 0);
-      delay(200);
-    }else if(IR_left < leftThreshold && turnleft > 4){
+      move_servos(baseSpeed, 1);
+      delay(100);
+      while(IR_left > leftThreshold){
+        move_servos(baseSpeed, 0);
+        IR_left = analogRead(pin_IR_left);
+        Serial.println("Hallo");
+        }
+    }
+    if(IR_left < leftThreshold && turnleft > 4){
       turnleft = 0;
-      move_servos(baseSpeed, 0);
-      delay(200);
+      move_servos(baseSpeed, -1);
+      delay(100);
+      while(IR_right > rightThreshold){
+        move_servos(baseSpeed, 0);
+        IR_right = analogRead(pin_IR_right);
+        Serial.println("Hallo");
+        }
     }
 
     if(IR_right < rightThreshold){
