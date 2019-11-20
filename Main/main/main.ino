@@ -1,4 +1,4 @@
-#include <NewPing.h>
+//#include <NewPing.h>
 #include <Servo.h>
 
 #define TRIGGER_PIN  9
@@ -26,6 +26,7 @@ float baseSpeed = -0.05;
 enum States{
 	left,
 	right,
+  forward,
 	none
 };
 
@@ -70,8 +71,7 @@ void loop()
     if(IR_left < leftThreshold && IR_right < rightThreshold){
     // If no line is detected
 		StartTime = 0;
-		move_servos(baseSpeed, 0);
-    	state = none;
+    state = none;
 		
     }else if (IR_left > leftThreshold && IR_right < rightThreshold) {
     // if line is detected by left side
@@ -79,9 +79,6 @@ void loop()
     // if StartTime is not set set it
 		if(!StartTime){
 			StartTime = millis();
-		}
-		if(state != right){
-			move_servos(baseSpeed, -alpha*(millis() - StartTime));
 		}
 		state = left;
     
@@ -92,19 +89,26 @@ void loop()
 		if(!StartTime){
 			StartTime = millis();
 		}
-		if(state != left){
-			move_servos(baseSpeed, alpha*(millis() - StartTime));
-		}
  		state = right;
     
     }else if(IR_left > leftThreshold && IR_right > rightThreshold){
-    // if both detect a line (consider it as no line for now)
-    
-		StartTime = 0;
-		if(state == none){
-			move_servos(baseSpeed, 0);
-		}
+      // if both detect a line (consider it as no line for now)
+		  StartTime = 0;
       // Intersection protocol
+    }
+
+    switch(state){
+        case(left):
+           move_servos(baseSpeed, -alpha*(millis() - StartTime));
+           break;
+        case(right):
+           move_servos(baseSpeed, alpha*(millis() - StartTime));
+           break;
+        case(none):
+           move_servos(baseSpeed, 0);
+           break;
+        case(forward):
+           move_servos(baseSpeed, 0);
     }
     Serial.print("Left sensor value: ");
     Serial.print(IR_left);
