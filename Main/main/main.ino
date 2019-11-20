@@ -84,7 +84,9 @@ void loop()
 		if(state == right){
 			state = forward;
 		}else{
- 			state = left;
+			if(state != forward){
+ 				state = left;
+			}
     	}
     
     }else if (IR_left < leftThreshold && IR_right > rightThreshold) {
@@ -98,12 +100,14 @@ void loop()
 		if(state == left){
 			state = forward;
 		}else{
- 			state = right;
+			if(state != forward){
+ 				state = right;
+			}
     	}
 
     }else if(IR_left > leftThreshold && IR_right > rightThreshold){
       // if both detect a line
-		if(millis() - StartTime < 100){
+		if(millis() - StartTime < 0){
 			StartTime = 0;
 			state = none;
 		}
