@@ -20,23 +20,16 @@ int IR_right = 0;
 int leftThreshold;
 int rightThreshold;
 
-const float alpha = 0.001;
-unsigned long StartTime = 0;
-unsigned long uncertainTime = 0;
 float baseSpeed = 0.5;
 
-const int speedFilterLength = 10;
-const int steeringFilterLength = 10;
-float speed[speedFilterLength];
-float steering[steeringFilterLength];
-int speedIndex = 0;
-int steeringIndex = 0;
+const int FilterLength = 5;
+float left[FilterLength];
+float right[FilterLength];
+int FilterIndex = 0;
 
-void move_servos(float baseSpeed, float offset)
+
+void move_servos(float speed_left, float speed_right)
 {
-	float speed_left = baseSpeed + offset;
-	float speed_right = -baseSpeed + offset;
-
 	speed_left = constrain(speed_left, -1, 1);
 	speed_right = constrain(speed_right, -1, 1);
 		
@@ -45,7 +38,7 @@ void move_servos(float baseSpeed, float offset)
 }
 
 float avg(float array[], int length){
-	int sum = 0;
+	float sum = 0;
 	
 	for(int i = 0; i<length; i++){
 		sum += array[i];
@@ -64,12 +57,9 @@ void setup()
 	leftThreshold = analogRead(pin_IR_left) + 50;
 	rightThreshold = analogRead(pin_IR_right) + 50;
 	
-	for(int i = 0; i < steeringFilterLength; i++){
-		speed[i] = baseSpeed;
-	}
-	
-	for(int i = 0; i < speedFilterLength; i++){
-		steering[i] = 0;
+	for(int i = 0; i < FilterLength; i++){
+		left[i] = baseSpeed;
+		right[i] = baseSpeed;
 	}
 	
 	// Init servo motors with 0
@@ -85,30 +75,29 @@ void loop()
     
     if(IR_left < leftThreshold && IR_right < rightThreshold){
 		// No line detected
-		speed[speedIndex] = baseSpeed;
-		steering[steeringIndex] = 0;
+		left[FilterIndex] = 1;
+		right[FilterIndex] = 1;
 		
 	}else if (IR_left > leftThreshold && IR_right < rightThreshold) {
 		// Line detected left		
 	
-		speed[speedIndex] = 0.05;
-		steering[steeringIndex] = -1;
+		left[FilterIndex] = -1;
+		right[FilterIndex] = 1;
 
 	}else if (IR_left < leftThreshold && IR_right > rightThreshold) {
 		// Line detected right
 		
-		speed[speedIndex] = 0.05;
-		steering[steeringIndex] = 1;
+		left[FilterIndex] = -1;
+		right[FilterIndex] = 1;
 		
 	}else if(IR_left > leftThreshold && IR_right > rightThreshold){
 		// Line detected both left right
 		
-		speed[speedIndex] = baseSpeed;
-		steering[steeringIndex] = 0;
+		left[FilterIndex] = 0;
+		right[FilterIndex] = 0;
     }
 	
-	move_servos(avg(speed, speedFilterLength), avg(steering, steeringFilterLength));
+	move_servos(avg(left, FilterLength), avg(right, FilterLength));
 	
-	speedIndex = (speedIndex + 1) % speedFilterLength;
-	steeringIndex = (steeringIndex + 1) % steeringFilterLength;
+	FilterIndex = (FilterIndex + 1) % FilterLength;
 }
