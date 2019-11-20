@@ -18,7 +18,8 @@ int IR_left = 0;
 int IR_right = 0;
 int leftThreshold;
 int rightThreshold;
-int turnleft, turnright = 0;
+int turnleft = 0;
+int turnright = 0;
 
 const float alpha = 0.005;
 unsigned long StartTime = 0;
@@ -63,17 +64,17 @@ void loop()
     //Probeersel sturen
     if(IR_right < rightThreshold){
       turnright = 0;
-      }else if(IR_left <leftThreshold){
+      }else if(IR_left < leftThreshold){
         turnleft = 0;
         }
   
     
-    if(IR_left < leftThreshold && IR_right < rightThreshold && turnright == 0){
+    if(IR_left < leftThreshold && IR_right < rightThreshold){
     // If no line is detected
     StartTime = 0;
     move_servos(baseSpeed, 0);
     
-    }else if (IR_left > leftThreshold && IR_right < rightThreshold) {
+    }else if (IR_left > leftThreshold && IR_right < rightThreshold && turnright == 0) {
     // if line is detected by left side
     turnleft = 1;
     // if StartTime is not set set it
