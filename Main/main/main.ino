@@ -21,7 +21,7 @@ int rightThreshold;
 int turnleft = 0;
 int turnright = 0;
 
-const float alpha = 0.005;
+const float alpha = 0.0005;
 unsigned long StartTime = 0;
 float baseSpeed = -0.05;
 
