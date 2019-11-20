@@ -26,7 +26,9 @@ float baseSpeed = -0.05;
 enum States{
 	left,
 	right,
-  forward,
+	sharp_left,
+	sharp_right,
+	forward,
 	none
 };
 
@@ -71,7 +73,7 @@ void loop()
     if(IR_left < leftThreshold && IR_right < rightThreshold){
     // If no line is detected
 		StartTime = 0;
-    state = none;
+    	state = none;
 		
     }else if (IR_left > leftThreshold && IR_right < rightThreshold) {
     // if line is detected by left side
@@ -80,7 +82,11 @@ void loop()
 		if(!StartTime){
 			StartTime = millis();
 		}
-		state = left;
+		if(state = right){
+			state = forward;
+		}else{
+ 			state = left;
+    	}
     
     }else if (IR_left < leftThreshold && IR_right > rightThreshold) {
     // if line is detected by right side
@@ -89,26 +95,30 @@ void loop()
 		if(!StartTime){
 			StartTime = millis();
 		}
- 		state = right;
-    
+		if(state = left){
+			state = forward;
+		}else{
+ 			state = right;
+    	}
     }else if(IR_left > leftThreshold && IR_right > rightThreshold){
       // if both detect a line (consider it as no line for now)
-		  StartTime = 0;
+		StartTime = 0;
       // Intersection protocol
     }
 
     switch(state){
         case(left):
-           move_servos(baseSpeed, -alpha*(millis() - StartTime));
-           break;
+			move_servos(baseSpeed, -alpha*(millis() - StartTime));
+			break;
         case(right):
-           move_servos(baseSpeed, alpha*(millis() - StartTime));
-           break;
+			move_servos(baseSpeed, alpha*(millis() - StartTime));
+			break;
         case(none):
-           move_servos(baseSpeed, 0);
-           break;
+			move_servos(baseSpeed, 0);
+			break;
         case(forward):
-           move_servos(baseSpeed, 0);
+			move_servos(baseSpeed, 0);
+			break;
     }
     Serial.print("Left sensor value: ");
     Serial.print(IR_left);
