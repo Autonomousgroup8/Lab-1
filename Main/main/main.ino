@@ -23,6 +23,7 @@ const float alpha = 0.005;
 unsigned long StartTime = 0;
 float baseSpeed = -0.05;
 
+// 3 1 2 3
 enum States{
 	left,
 	right,
@@ -129,9 +130,4 @@ void loop()
 			move_servos(baseSpeed, 0);
 			break;
     }
-    Serial.print("Left sensor value: ");
-    Serial.print(IR_left);
-    Serial.print("; right sensor value: ");
-    Serial.print(IR_right);
-    Serial.println();
 }
