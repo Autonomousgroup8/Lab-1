@@ -1,4 +1,4 @@
-#include <NewPing.h>
+//#include <NewPing.h>
 #include <Servo.h>
 
 #define TRIGGER_PIN  9
@@ -21,7 +21,7 @@ int rightThreshold;
 int turnleft = 0;
 int turnright = 0;
 
-const float alpha = 0.0005;
+const float alpha = 0.05;
 unsigned long StartTime = 0;
 float baseSpeed = -0.05;
 
@@ -96,22 +96,21 @@ void loop()
     move_servos(baseSpeed, 0);
     
     }else if (IR_left > leftThreshold && IR_right < rightThreshold) {
-    // if line is detected by left side
-    turnleft ++;
-    // if StartTime is not set set it
-    if(!StartTime){
-      StartTime = millis();
-    }
+      // if line is detected by left side
+      turnleft ++;
+      // if StartTime is not set set it
+      if(!StartTime){
+        StartTime = millis();
+      }
     move_servos(baseSpeed, -alpha*(millis() - StartTime));
   
     }else if (IR_left < leftThreshold && IR_right > rightThreshold) {
-    // if line is detected by right side
-    turnright ++;
-    // if StartTime is not set set it
-    if(!StartTime){
-      StartTime = millis();
+      // if line is detected by right side
+      turnright ++;
+      // if StartTime is not set set it
+      if(!StartTime){
+        StartTime = millis();
     }
-
     move_servos(baseSpeed, alpha*(millis() - StartTime));
  
     }else if(IR_left > leftThreshold && IR_right > rightThreshold && turnright == 0 && turnleft == 0){
@@ -121,14 +120,14 @@ void loop()
     move_servos(baseSpeed, 0);
       // Intersection protocol
     }
-    //Serial.print("Left sensor value: ");
-    //Serial.print(IR_left);
-    //Serial.print("; right sensor value: ");
-    //Serial.print(IR_right);
-    //Serial.print("; CountLeft: ");
-    //Serial.print(turnleft);
-    //Serial.print("; CountRight: ");
-    //Serial.print(turnright);
-    //Serial.println();
+//    Serial.print("Left sensor value: ");
+//    Serial.print(IR_left);
+//    Serial.print("; right sensor value: ");
+//    Serial.print(IR_right);
+//    Serial.print("; CountLeft: ");
+//    Serial.print(turnleft);
+//    Serial.print("; CountRight: ");
+//    Serial.print(turnright);
+//    Serial.println();
     
 }
