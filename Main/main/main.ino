@@ -62,21 +62,31 @@ void loop()
     IR_right = analogRead(pin_IR_right);
 
     //Probeersel sturen
+    if(IR_right < rightThreshold && turnright > 4){
+      turnright = 0;
+      move_servos(baseSpeed, 0);
+      delay(200);
+    }else if(IR_left < leftThreshold && turnleft > 4){
+      turnleft = 0;
+      move_servos(baseSpeed, 0);
+      delay(200);
+    }
+
     if(IR_right < rightThreshold){
       turnright = 0;
-      }else if(IR_left < leftThreshold){
-        turnleft = 0;
-        }
-  
+    }
+    if(IR_left < leftThreshold){
+      turnleft = 0;
+    }
     
     if(IR_left < leftThreshold && IR_right < rightThreshold){
     // If no line is detected
     StartTime = 0;
     move_servos(baseSpeed, 0);
     
-    }else if (IR_left > leftThreshold && IR_right < rightThreshold && turnright == 0) {
+    }else if (IR_left > leftThreshold && IR_right < rightThreshold) {
     // if line is detected by left side
-    turnleft = 1;
+    turnleft ++;
     // if StartTime is not set set it
     if(!StartTime){
       StartTime = millis();
@@ -84,9 +94,9 @@ void loop()
     move_servos(baseSpeed, -alpha*(millis() - StartTime));
   
     
-    }else if (IR_left < leftThreshold && IR_right > rightThreshold && turnleft == 0) {
+    }else if (IR_left < leftThreshold && IR_right > rightThreshold) {
     // if line is detected by right side
-    turnright = 1;
+    turnright ++;
     // if StartTime is not set set it
     if(!StartTime){
       StartTime = millis();
@@ -95,7 +105,7 @@ void loop()
     move_servos(baseSpeed, alpha*(millis() - StartTime));
  
     
-    }else if(IR_left > leftThreshold && IR_right > rightThreshold){
+    }else if(IR_left > leftThreshold && IR_right > rightThreshold && turnright == 0 && turnleft == 0){
     // if both detect a line (consider it as no line for now)
     
     StartTime = 0;
@@ -106,5 +116,10 @@ void loop()
     Serial.print(IR_left);
     Serial.print("; right sensor value: ");
     Serial.print(IR_right);
+    Serial.print("; CountLeft: ");
+    Serial.print(turnleft);
+    Serial.print("; CountRight: ");
+    Serial.print(turnright);
     Serial.println();
+    
 }
