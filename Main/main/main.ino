@@ -101,8 +101,8 @@ void loop()
  			state = right;
     	}
     }else if(IR_left > leftThreshold && IR_right > rightThreshold){
-      // if both detect a line (consider it as no line for now)
-		StartTime = 0;
+      // if both detect a line
+	  StartTime = 0;
       // Intersection protocol
     }
 
