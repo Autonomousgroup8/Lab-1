@@ -11,8 +11,8 @@ Servo servo_right;
 const int pin_Servo_left = 13;       
 const int pin_Servo_right = 12;
 
-const int pin_IR_left = 0;       
-const int pin_IR_right = 1;
+const int pin_IR_left = A0;       
+const int pin_IR_right = A1;
 
 int IR_left = 0;
 int IR_right = 0;
@@ -21,7 +21,7 @@ int rightThreshold;
 int turnleft = 0;
 int turnright = 0;
 
-const float alpha = 0.05;
+const float alpha = 0.005;
 unsigned long StartTime = 0;
 float baseSpeed = -0.05;
 
@@ -120,14 +120,14 @@ void loop()
     move_servos(baseSpeed, 0);
       // Intersection protocol
     }
-//    Serial.print("Left sensor value: ");
-//    Serial.print(IR_left);
-//    Serial.print("; right sensor value: ");
-//    Serial.print(IR_right);
-//    Serial.print("; CountLeft: ");
-//    Serial.print(turnleft);
-//    Serial.print("; CountRight: ");
-//    Serial.print(turnright);
-//    Serial.println();
+    Serial.print("Left sensor value: ");
+    Serial.print(IR_left);
+    Serial.print("; right sensor value: ");
+    Serial.print(IR_right);
+    Serial.print("; CountLeft: ");
+    Serial.print(turnleft);
+    Serial.print("; CountRight: ");
+    Serial.print(turnright);
+    Serial.println();
     
 }
