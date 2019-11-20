@@ -26,8 +26,6 @@ float baseSpeed = -0.05;
 enum States{
 	left,
 	right,
-	sharp_left,
-	sharp_right,
 	forward,
 	none
 };
@@ -82,7 +80,8 @@ void loop()
 		if(!StartTime){
 			StartTime = millis();
 		}
-		if(state = right){
+		
+		if(state == right){
 			state = forward;
 		}else{
  			state = left;
@@ -95,14 +94,20 @@ void loop()
 		if(!StartTime){
 			StartTime = millis();
 		}
-		if(state = left){
+		
+		if(state == left){
 			state = forward;
 		}else{
  			state = right;
     	}
+
     }else if(IR_left > leftThreshold && IR_right > rightThreshold){
       // if both detect a line
-	  StartTime = 0;
+		if(millis() - StartTime < 100){
+			StartTime = 0;
+			state = none;
+		}
+	  
       // Intersection protocol
     }
 
