@@ -27,7 +27,8 @@ float baseSpeed = -0.05;
 enum States{
 	left,
 	right,
-	forward,
+	further_left,
+	further_right,
 	none
 };
 
@@ -82,13 +83,9 @@ void loop()
 			StartTime = millis();
 		}
 		
-		if(state == right){
-			state = forward;
-		}else{
-			if(state != forward){
- 				state = left;
-			}
-    	}
+		if(state != further_right){
+			state = left;
+		}
     
     }else if (IR_left < leftThreshold && IR_right > rightThreshold) {
     // if line is detected by right side
@@ -98,19 +95,22 @@ void loop()
 			StartTime = millis();
 		}
 		
-		if(state == left){
-			state = forward;
-		}else{
-			if(state != forward){
- 				state = right;
-			}
-    	}
+		if(state != further_left){
+			state = right;
+		}
 
     }else if(IR_left > leftThreshold && IR_right > rightThreshold){
       // if both detect a line
-		if(millis() - StartTime < 0){
+		if(millis() - StartTime < 100){
 			StartTime = 0;
 			state = none;
+		}else{
+			if(state == left){
+				state = further_left;
+			}
+			if(state == right){
+				state = further_right;
+			}
 		}
 	  
       // Intersection protocol
@@ -123,10 +123,13 @@ void loop()
         case(right):
 			move_servos(baseSpeed, alpha*(millis() - StartTime));
 			break;
-        case(none):
-			move_servos(baseSpeed, 0);
+        case(further_left):
+			move_servos(baseSpeed, -alpha*(millis() - StartTime));
 			break;
-        case(forward):
+        case(further_right):
+			move_servos(baseSpeed, alpha*(millis() - StartTime));
+			break;		
+        case(none):
 			move_servos(baseSpeed, 0);
 			break;
     }
