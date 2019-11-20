@@ -18,10 +18,11 @@ int IR_left = 0;
 int IR_right = 0;
 int leftThreshold;
 int rightThreshold;
+int turnleft, turnright = 0;
 
 const float alpha = 0.005;
 unsigned long StartTime = 0;
-float baseSpeed = 0.05;
+float baseSpeed = -0.05;
 
 void move_servos(float baseSpeed, float offset)
 {
@@ -59,16 +60,22 @@ void loop()
     IR_left = analogRead(pin_IR_left);
     IR_right = analogRead(pin_IR_right);
 
+    //Probeersel sturen
+    if(IR_right < rightThreshold){
+      turnright = 0;
+      }else if(IR_left <leftThreshold){
+        turnleft = 0;
+        }
   
     
-    if(IR_left < leftThreshold && IR_right < rightThreshold){
+    if(IR_left < leftThreshold && IR_right < rightThreshold && turnright == 0){
     // If no line is detected
     StartTime = 0;
     move_servos(baseSpeed, 0);
     
     }else if (IR_left > leftThreshold && IR_right < rightThreshold) {
     // if line is detected by left side
-    
+    turnleft = 1;
     // if StartTime is not set set it
     if(!StartTime){
       StartTime = millis();
@@ -76,9 +83,9 @@ void loop()
     move_servos(baseSpeed, -alpha*(millis() - StartTime));
   
     
-    }else if (IR_left < leftThreshold && IR_right > rightThreshold) {
+    }else if (IR_left < leftThreshold && IR_right > rightThreshold && turnleft == 0) {
     // if line is detected by right side
-    
+    turnright = 1;
     // if StartTime is not set set it
     if(!StartTime){
       StartTime = millis();
