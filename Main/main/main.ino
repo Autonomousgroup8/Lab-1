@@ -53,7 +53,7 @@ void loop()
     IR_right = digitalRead(pin_IR_right);
 
     //Probeersel sturen
-    if(IR_right == LOW && turnright > 10){
+    if(IR_right == LOW && turnright > 6){
       turnright = 0;
       move_servos(baseSpeed, 1);
       delay(100);
@@ -62,7 +62,7 @@ void loop()
         IR_left = digitalRead(pin_IR_left);
         }
     }
-    if(IR_left == LOW && turnleft > 10){
+    if(IR_left == LOW && turnleft > 6){
       turnleft = 0;
       move_servos(baseSpeed, -alpha);
       delay(100);
