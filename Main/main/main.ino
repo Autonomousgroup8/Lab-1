@@ -26,13 +26,21 @@ const float alpha = 0.0005;
 unsigned long StartTime = 0;
 float baseSpeed = -0.05;
 
+<<<<<<< Updated upstream
+=======
+
+>>>>>>> Stashed changes
 //Zigbee implementation
 #define SELF     43
 #define PAN_ID           "A008"
 #define CHANNEL_ID       "0F"
 bool waitMode = false;
 int crossingsPassed = 0;
+<<<<<<< Updated upstream
 
+=======
+int incomingByte = 0;
+>>>>>>> Stashed changes
 
 // some macros needed for the xbee_init function. Do not touch :-).
 #define STRING(name) #name
@@ -66,6 +74,11 @@ void xbee_init(void)
 }
 
 
+<<<<<<< Updated upstream
+=======
+
+
+>>>>>>> Stashed changes
 void move_servos(float baseSpeed, float offset)
 {
 
@@ -81,12 +94,21 @@ void move_servos(float baseSpeed, float offset)
 
 void setup() 
 {
+<<<<<<< Updated upstream
     xbee_init();
+=======
+
+      xbee_init();
+>>>>>>> Stashed changes
   // initialize the LED light on the Arduino board
   led_init();
   // send something on the wireless network
   Serial.println("This is the XBee - Broadcast program.");
+<<<<<<< Updated upstream
  // Serial.begin(9600);
+=======
+  //Serial.begin(9600);
+>>>>>>> Stashed changes
   servo_left.attach(pin_Servo_left);
   servo_right.attach(pin_Servo_right);
 
@@ -106,6 +128,10 @@ void setup()
 
 void loop()
 {    
+<<<<<<< Updated upstream
+=======
+
+>>>>>>> Stashed changes
   if(!waitMode){
   // Read from IR sensors
     IR_left = analogRead(pin_IR_left);
@@ -158,10 +184,41 @@ void loop()
   
     }else if (IR_left < leftThreshold && IR_right > rightThreshold) {
       // if line is detected by right side
+<<<<<<< Updated upstream
       turnright ++;
       // if StartTime is not set set it
       if(!StartTime){
         StartTime = millis();
+=======
+    turnright ++;
+    rechtdoor = 0;
+      // if StartTime is not set set it 
+    if(turnright > 10){
+      move_servos(baseSpeed, 2*alpha);
+      }
+    move_servos(baseSpeed, alpha);
+ 
+    }else if(IR_left == HIGH && IR_right == HIGH && turnright < 6 && turnleft < 6 && crossingsPassed == 0){
+     
+    // if both detect a line (consider it as no line for now)
+    rechtdoor = 0;
+    StartTime = 0;
+    waitMode = true;
+    crossingsPassed++;
+    move_servos(0, 0);
+    delay(500);
+    Serial.print(1);
+    // Intersection protocol
+    }
+    else if(IR_left == HIGH && IR_right == HIGH && turnright < 6 && turnleft < 6 && crossingsPassed > 0){
+     
+    // if both detect a line (consider it as no line for now)
+    rechtdoor = 0;
+    StartTime = 0;
+   crossingsPassed = (crossingsPassed + 1)%3 ;
+      move_servos(baseSpeed,0);
+    // Intersection protocol
+>>>>>>> Stashed changes
     }
     move_servos(baseSpeed, alpha*(millis() - StartTime));
 
@@ -199,4 +256,23 @@ void loop()
 //    Serial.print(turnright);
 //    Serial.println();
     
+<<<<<<< Updated upstream
+=======
+  }
+  else if (waitMode == true){
+      if(Serial.available()>0){
+      incomingByte = Serial.read();
+      if (incomingByte == 31){
+      waitMode = false;
+      move_servos(baseSpeed,0);
+      delay(500);
+  }
+      }}
+  
+   // Serial.print("LEFT: ");
+    //Serial.print(turnleft);
+    //Serial.print(" RIGHT: ");
+    //Serial.print(turnright);
+    //Serial.println();
+>>>>>>> Stashed changes
 }
