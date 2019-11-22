@@ -18,12 +18,14 @@ int IR_left = 0;
 int IR_right = 0;
 int leftThreshold;
 int rightThreshold;
+
 int turnleft = 0;
 int turnright = 0;
 
 const float alpha = 0.0005;
 unsigned long StartTime = 0;
 float baseSpeed = -0.05;
+
 
 void move_servos(float baseSpeed, float offset)
 {
@@ -53,6 +55,9 @@ void setup()
   // Init servo motors with 0
   servo_right.write(90);
   servo_right.write(90);
+
+  leftThreshold = IR_left + 50;
+  rightThreshold = IR_right + 50;
 }
 
 void loop()
@@ -104,6 +109,7 @@ void loop()
         StartTime = millis();
       }
     move_servos(baseSpeed, -alpha*(millis() - StartTime));
+
   
     }else if (IR_left < leftThreshold && IR_right > rightThreshold) {
       // if line is detected by right side
@@ -113,14 +119,16 @@ void loop()
         StartTime = millis();
     }
     move_servos(baseSpeed, alpha*(millis() - StartTime));
- 
+
     }else if(IR_left > leftThreshold && IR_right > rightThreshold && turnright == 0 && turnleft == 0){
+
     // if both detect a line (consider it as no line for now)
     
     StartTime = 0;
     move_servos(baseSpeed, 0);
       // Intersection protocol
     }
+
 //    Serial.print("Left sensor value: ");
 //    Serial.print(IR_left);
 //    Serial.print("; right sensor value: ");
