@@ -59,19 +59,20 @@ void loop()
 {    
   // Read from IR sensors
     IR_left = analogRead(pin_IR_left);
-    IR_right = analogRead(pin_IR_right);
+    IR_right = analogRead(pin_IR_right);               //digitalRead would be preffered.
 
-    //Probeersel sturen
-    if(IR_right < rightThreshold && turnright > 4){
+    //Sharp corner protocol right
+    if(IR_right < rightThreshold && turnright > 4){   //right sensor has detected white after sharp turn
       turnright = 0;
-      move_servos(baseSpeed, 1);
+      move_servos(baseSpeed, 1);                      //turn a bit further for improved corner handling
       delay(100);
-      while(IR_left > leftThreshold){
+      while(IR_left > leftThreshold){                 //drive forward while left sensor still detects black
         move_servos(baseSpeed, 0);
         IR_left = analogRead(pin_IR_left);
         //Serial.println("Hallo");
         }
     }
+    //Sharp corner protocol left
     if(IR_left < leftThreshold && turnleft > 4){
       turnleft = 0;
       move_servos(baseSpeed, -1);
