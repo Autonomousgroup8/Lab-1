@@ -120,14 +120,14 @@ void loop()
     move_servos(baseSpeed, 0);
       // Intersection protocol
     }
-    Serial.print("Left sensor value: ");
-    Serial.print(IR_left);
-    Serial.print("; right sensor value: ");
-    Serial.print(IR_right);
-    Serial.print("; CountLeft: ");
-    Serial.print(turnleft);
-    Serial.print("; CountRight: ");
-    Serial.print(turnright);
-    Serial.println();
+//    Serial.print("Left sensor value: ");
+//    Serial.print(IR_left);
+//    Serial.print("; right sensor value: ");
+//    Serial.print(IR_right);
+//    Serial.print("; CountLeft: ");
+//    Serial.print(turnleft);
+//    Serial.print("; CountRight: ");
+//    Serial.print(turnright);
+//    Serial.println();
     
 }
