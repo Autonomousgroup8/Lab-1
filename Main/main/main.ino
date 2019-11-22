@@ -107,7 +107,8 @@ void loop()
       }
     move_servos(baseSpeed, alpha);
  
-    }else if(IR_left == HIGH && IR_right == HIGH && turnright < 10 && turnleft < 10){
+    }else if(IR_left == HIGH && IR_right == HIGH && turnright < 6 && turnleft < 6){
+     
     // if both detect a line (consider it as no line for now)
     rechtdoor = 0;
     StartTime = 0;
@@ -115,8 +116,9 @@ void loop()
     delay(1000);
     move_servos(baseSpeed,0);
     delay(500);
-      // Intersection protocol
+    // Intersection protocol
     }
+    
     Serial.print("LEFT: ");
     Serial.print(turnleft);
     Serial.print(" RIGHT: ");
