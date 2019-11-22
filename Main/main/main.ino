@@ -19,7 +19,7 @@ int IR_right = 0;
 int turnleft = 0;
 int turnright = 0;
 
-const float alpha = 0.0005;
+const float alpha = 0.05;
 unsigned long StartTime = 0;
 float baseSpeed = -0.05;
 
@@ -42,7 +42,6 @@ void setup()
   servo_left.attach(pin_Servo_left);
   servo_right.attach(pin_Servo_right);
   
-  // Init servo motors with 0
   servo_right.write(90);
   servo_right.write(90);
 }
@@ -61,17 +60,15 @@ void loop()
       while(IR_left == HIGH){
         move_servos(baseSpeed, 0);
         IR_left = digitalRead(pin_IR_left);
-        //Serial.println("Hallo");
         }
     }
     if(IR_left == LOW && turnleft > 4){
       turnleft = 0;
-      move_servos(baseSpeed, -1);
+      move_servos(baseSpeed, -alpha);
       delay(100);
       while(IR_right == HIGH){
         move_servos(baseSpeed, 0);
         IR_right = digitalRead(pin_IR_right);
-        //Serial.println("Hallo");
         }
     }
 
@@ -84,26 +81,19 @@ void loop()
     
     if(IR_left == LOW && IR_right == LOW){
     // If no line is detected
-    StartTime = 0;
     move_servos(baseSpeed, 0);
     
     }else if (IR_left == HIGH && IR_right == LOW) {
       // if line is detected by left side
       turnleft ++;
       // if StartTime is not set set it
-      if(!StartTime){
-        StartTime = millis();
-      }
-    move_servos(baseSpeed, -alpha*(millis() - StartTime));
+    move_servos(baseSpeed, -alpha);
   
     }else if (IR_left == LOW && IR_right == HIGH) {
       // if line is detected by right side
-      turnright ++;
-      // if StartTime is not set set it
-      if(!StartTime){
-        StartTime = millis();
-    }
-    move_servos(baseSpeed, alpha*(millis() - StartTime));
+    turnright ++;
+      // if StartTime is not set set it 
+    move_servos(baseSpeed, alpha);
  
     }else if(IR_left == HIGH && IR_right == HIGH && turnright == 0 && turnleft == 0){
     // if both detect a line (consider it as no line for now)
