@@ -3,7 +3,6 @@
 
 #define TRIGGER_PIN  9
 #define ECHO_PIN     9
-#define MAX_DISTANCE 200
 #define MIN_DISTANCE 3
 #define MAX_DISTANCE 10
 #define SONAR_DISTANCE 200
@@ -67,15 +66,15 @@ void setup()
 void loop()
 {    
   // Read from IR sensors
-    Distance = sonar.ping_cm();
+    //Distance = sonar.ping_cm();
     IR_left = analogRead(pin_IR_left);
     IR_right = analogRead(pin_IR_right);               //digitalRead would be preffered.
 
-    while(Distance > MIN_DISTANCE && Distance < MAX_DISTANCE){
-    move_servos(0, 0);
-    Distance = sonar.ping_cm();
-    }
-    
+//    while(Distance > MIN_DISTANCE && Distance < MAX_DISTANCE){
+//    move_servos(0, 0);
+//    Distance = sonar.ping_cm();
+//    }
+//    
     //Sharp corner protocol right
     if(IR_right < rightThreshold && turnright > 4){   //right sensor has detected white after sharp turn
       turnright = 0;
