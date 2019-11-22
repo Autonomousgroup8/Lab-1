@@ -4,15 +4,17 @@
 #define TRIGGER_PIN  9
 #define ECHO_PIN     9
 #define MIN_DISTANCE 3
-#define MAX_DISTANCE 10
+#define MAX_DISTANCE 20
 #define SONAR_DISTANCE 200
 
 Servo servo_left;
 Servo servo_right;
+Servo servo_ultrasound;
 NewPing sonar(TRIGGER_PIN, ECHO_PIN, SONAR_DISTANCE);
 
 const int pin_Servo_left = 13;       
 const int pin_Servo_right = 12;
+const int pin_Servo_ultrasound = 11;
 
 const int pin_IR_left = A0;       
 const int pin_IR_right = A1;
@@ -48,6 +50,7 @@ void setup()
   Serial.begin(9600);
   servo_left.attach(pin_Servo_left);
   servo_right.attach(pin_Servo_right);
+  servo_ultrasound.attach(pin_Servo_ultrasound);
 
   IR_left = analogRead(pin_IR_left);
   IR_right = analogRead(pin_IR_right);
@@ -58,6 +61,7 @@ void setup()
   // Init servo motors with 0
   servo_right.write(90);
   servo_right.write(90);
+  servo_ultrasound.write(90);
 
   leftThreshold = IR_left + 50;
   rightThreshold = IR_right + 50;
@@ -66,15 +70,15 @@ void setup()
 void loop()
 {    
   // Read from IR sensors
-    //Distance = sonar.ping_cm();
+    Distance = sonar.ping_cm();
     IR_left = analogRead(pin_IR_left);
     IR_right = analogRead(pin_IR_right);               //digitalRead would be preffered.
 
-//    while(Distance > MIN_DISTANCE && Distance < MAX_DISTANCE){
-//    move_servos(0, 0);
-//    Distance = sonar.ping_cm();
-//    }
-//    
+    if(Distance > MIN_DISTANCE && Distance < MAX_DISTANCE){
+    move_servos(0, 0);
+    return;
+    }
+    
     //Sharp corner protocol right
     if(IR_right < rightThreshold && turnright > 4){   //right sensor has detected white after sharp turn
       turnright = 0;
