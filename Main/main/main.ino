@@ -4,7 +4,9 @@
 #define TRIGGER_PIN  9
 #define ECHO_PIN     9
 #define MAX_DISTANCE 200
-#define MIN_DISTANCE 8
+#define MIN_DISTANCE 3
+#define MAX_DISTANCE 10
+#define SONAR_DISTANCE 200
 
 Servo servo_left;
 Servo servo_right;
@@ -69,9 +71,8 @@ void loop()
     IR_left = analogRead(pin_IR_left);
     IR_right = analogRead(pin_IR_right);               //digitalRead would be preffered.
 
-    while(Distance < MIN_DISTANCE){
-    baseSpeed = 90; //Stand still if too close
-    move_servos(baseSpeed, 0);
+    while(Distance > MIN_DISTANCE && Distance < MAX_DISTANCE){
+    move_servos(0, 0);
     Distance = sonar.ping_cm();
     }
     
