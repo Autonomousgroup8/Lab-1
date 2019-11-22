@@ -1,12 +1,14 @@
-//#include <NewPing.h>
+#include <NewPing.h>
 #include <Servo.h>
 
 #define TRIGGER_PIN  9
 #define ECHO_PIN     9
 #define MAX_DISTANCE 200
+#define MIN_DISTANCE 8
 
 Servo servo_left;
 Servo servo_right;
+NewPing sonar(TRIGGER_PIN, ECHO_PIN, SONAR_DISTANCE);
 
 const int pin_Servo_left = 13;       
 const int pin_Servo_right = 12;
@@ -21,7 +23,7 @@ int rightThreshold;
 
 int turnleft = 0;
 int turnright = 0;
-
+int Distance = 10;
 const float alpha = 0.0005;
 unsigned long StartTime = 0;
 float baseSpeed = -0.05;
@@ -63,9 +65,16 @@ void setup()
 void loop()
 {    
   // Read from IR sensors
+    Distance = sonar.ping_cm();
     IR_left = analogRead(pin_IR_left);
     IR_right = analogRead(pin_IR_right);               //digitalRead would be preffered.
 
+    while(Distance < MIN_DISTANCE){
+    baseSpeed = 90; //Stand still if too close
+    move_servos(baseSpeed, 0);
+    Distance = sonar.ping_cm();
+    }
+    
     //Sharp corner protocol right
     if(IR_right < rightThreshold && turnright > 4){   //right sensor has detected white after sharp turn
       turnright = 0;
