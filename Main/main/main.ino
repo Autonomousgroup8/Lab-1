@@ -18,8 +18,8 @@ int IR_left = 0;
 int IR_right = 0;
 int turnleft = 0;
 int turnright = 0;
-
-const float alpha = 0.05;
+int rechtdoor = 0;
+const float alpha = 0.1;
 unsigned long StartTime = 0;
 float baseSpeed = -0.05;
 
@@ -53,7 +53,7 @@ void loop()
     IR_right = digitalRead(pin_IR_right);
 
     //Probeersel sturen
-    if(IR_right == LOW && turnright > 4){
+    if(IR_right == LOW && turnright > 10){
       turnright = 0;
       move_servos(baseSpeed, 1);
       delay(100);
@@ -62,7 +62,7 @@ void loop()
         IR_left = digitalRead(pin_IR_left);
         }
     }
-    if(IR_left == LOW && turnleft > 4){
+    if(IR_left == LOW && turnleft > 10){
       turnleft = 0;
       move_servos(baseSpeed, -alpha);
       delay(100);
@@ -82,24 +82,44 @@ void loop()
     if(IR_left == LOW && IR_right == LOW){
     // If no line is detected
     move_servos(baseSpeed, 0);
+    rechtdoor++;
+    if(rechtdoor>20){
+      move_servos(2*baseSpeed, 0);
+      }
     
     }else if (IR_left == HIGH && IR_right == LOW) {
       // if line is detected by left side
       turnleft ++;
+      rechtdoor = 0;
       // if StartTime is not set set it
-    move_servos(baseSpeed, -alpha);
+      if(turnleft > 10){
+      move_servos(baseSpeed, -2*alpha);
+      }
+      move_servos(baseSpeed, -alpha);
   
     }else if (IR_left == LOW && IR_right == HIGH) {
       // if line is detected by right side
     turnright ++;
+    rechtdoor = 0;
       // if StartTime is not set set it 
+    if(turnright > 10){
+      move_servos(baseSpeed, 2*alpha);
+      }
     move_servos(baseSpeed, alpha);
  
-    }else if(IR_left == HIGH && IR_right == HIGH && turnright == 0 && turnleft == 0){
+    }else if(IR_left == HIGH && IR_right == HIGH && turnright < 10 && turnleft < 10){
     // if both detect a line (consider it as no line for now)
-    
+    rechtdoor = 0;
     StartTime = 0;
-    move_servos(baseSpeed, 0);
+    move_servos(0, 0);
+    delay(1000);
+    move_servos(baseSpeed,0);
+    delay(500);
       // Intersection protocol
     }
+    Serial.print("LEFT: ");
+    Serial.print(turnleft);
+    Serial.print(" RIGHT: ");
+    Serial.print(turnright);
+    Serial.println();
 }
