@@ -21,11 +21,11 @@ int IR_right = 0;
 int turnleft = 0;
 int turnright = 0;
 int rechtdoor = 0;
-const float alpha = 0.3;
+const float alpha = 0.15;
 const float beta = 0.002;
 unsigned long StartTime = 0;
 float baseSpeed = 0.05;
-float ACCSpeed = 0.25;
+float ACCSpeed = 0.05;
 
 void move_servos(float baseSpeed, float offset)
 {
