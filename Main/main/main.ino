@@ -1,10 +1,12 @@
-//#include <NewPing.h>
+#include <NewPing.h>
 #include <Servo.h>
 
 #define TRIGGER_PIN  9
 #define ECHO_PIN     9
 #define MAX_DISTANCE 200
+#define Ref_Distance 7
 
+NewPing sonar(TRIGGER_PIN, ECHO_PIN, MAX_DISTANCE);
 Servo servo_left;
 Servo servo_right;
 
@@ -20,14 +22,15 @@ int turnleft = 0;
 int turnright = 0;
 int rechtdoor = 0;
 const float alpha = 0.1;
+const float beta = 0.0002;
 unsigned long StartTime = 0;
-float baseSpeed = -0.05;
+float baseSpeed = 0.05;
 
 void move_servos(float baseSpeed, float offset)
 {
 
-  float speed_left = baseSpeed +  offset;
-  float speed_right = -baseSpeed + offset;
+  float speed_left = -baseSpeed +  offset;
+  float speed_right = baseSpeed + offset;
 
   speed_left = constrain(speed_left, -1, 1);
   speed_right = constrain(speed_right, -1, 1);
@@ -46,8 +49,28 @@ void setup()
   servo_right.write(90);
 }
 
+float ACC(){
+	int Distance = sonar.ping_cm();
+	
+	if(Distance > 49 || Distance == 0){
+		// Nothing in front
+		return baseSpeed;
+	}else if (Distance < 50 && Distance > Ref_Distance + 2){
+		// Larger than preffered distance
+		return baseSpeed + beta*(Distance - Ref_Distance);
+	}else if (Distance < Ref_Distance - 2){
+		// too small
+		return max(baseSpeed - abs(2*beta*(Distance - Ref_Distance)), 0);
+	}else{
+		// in the window
+		return baseSpeed + 0.1*beta*(Distance - Ref_Distance);
+	}
+}
+
 void loop()
 {    
+	baseSpeed = ACC();
+	
   // Read from IR sensors
     IR_left = digitalRead(pin_IR_left);
     IR_right = digitalRead(pin_IR_right);
