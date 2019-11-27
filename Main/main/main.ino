@@ -13,22 +13,16 @@ const int pin_Servo_right = 12;
 
 const int pin_IR_left = A0;       
 const int pin_IR_right = A1;
-int trash = 0;
+
 int incomingByte = 0;
 int IR_left = 0;
 int IR_right = 0;
 int turnleft = 0;
 int turnright = 0;
 int rechtdoor = 0;
-int currentCrossingTime = 0;
-int hits = 0;
-int lastCrossingTime = 0;
-int crossingThreshold = 100;
-const float alpha = 0.3;
-unsigned long lastTime = 0;
-unsigned long currentTime = 0;
-unsigned long thresholdTime = 20000;
-float baseSpeed = -0.25;
+const float alpha = 0.1;
+unsigned long StartTime = 0;
+float baseSpeed = -0.05;
 
 //Zigbee implementation
 #define SELF     43
@@ -88,9 +82,7 @@ void loop()
 {    
     IR_left = digitalRead(pin_IR_left);
     IR_right = digitalRead(pin_IR_right);
-    
   if(!waitMode){
-    
 //      if(IR_right == LOW && turnright > 6){
 //      turnright = 0;
 //      move_servos(baseSpeed, alpha);
@@ -142,47 +134,44 @@ void loop()
       }
     move_servos(baseSpeed, alpha);
  
-    }else if(IR_left == HIGH && IR_right == HIGH){
-    //first crossing
+    }else if(IR_left == HIGH && IR_right == HIGH && crossingsPassed == 0){
     rechtdoor = 0;
-    currentTime = millis();
-    if(currentTime-lastTime > thresholdTime || hits == 0){
-      waitMode = true;
-      //crossingsPassed++;
-      lastCrossingTime = currentCrossingTime;
-      move_servos(0, 0);
-      //delay(100);
-      Serial.println(6);
-      trash = Serial.read();
-      hits = 1;
-      }
-     lastTime = currentTime;
+    waitMode = true;
+    crossingsPassed++;
+    move_servos(0, 0);
+    //delay(100);
+    //erial.println(1);
+    Serial.print("Crossing: ");
+    Serial.print(crossingsPassed);
+    Serial.println();
     // Intersection protocol
     }
         
-//    else if(IR_left == HIGH && IR_right == HIGH){
-//    //middle or final crossing
-//    rechtdoor = 0;
-//    crossingsPassed++;
-//  
-//    if(crossingsPassed>60){
-//      crossingsPassed = 0;
-//      }
-//    move_servos(baseSpeed,0);
-//    // Intersection protocol
-//    }
-  }else if (waitMode == true){
+    else if(IR_left == HIGH && IR_right == HIGH && crossingsPassed > 0){
+    // if both detect a line (consider it as no line for now)
+    rechtdoor = 0;
+    StartTime = 0;
+    crossingsPassed++;
+    Serial.print("Crossing2: ");
+    Serial.print(crossingsPassed);
+    Serial.println();
+    if(crossingsPassed>10){
+      crossingsPassed ==0;
+      } ;
+    move_servos(baseSpeed,0);
+    // Intersection protocol
+  }
+  }
+  else if (waitMode == true){
       if(Serial.available()>0){
         incomingByte = Serial.read();
-      if (incomingByte == 54){
+      if (incomingByte == 49){
         waitMode = false;
         move_servos(baseSpeed,0);
         delay(200);
       }
       }
   }
-  
-//  Serial.println(lastCrossingTime-currentCrossingTime);
 //  Serial.print("LEFT: ");
 //  Serial.print(turnleft);
 //  Serial.print(" RIGHT: ");
