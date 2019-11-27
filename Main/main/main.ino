@@ -29,28 +29,17 @@ const float gamma = 10;
 unsigned long StartTime = 0;
 float baseSpeed = 0.05;
 float ACCSpeed = 0.05;
-int sum = 0;
-int average = 0;
-float headpos = 0;
+const int FilterLength = 10;
+int TurningAverage[FilterLength];
+int FilterIndex = 0;
 
-
-
-int sign(int x) {
-  if (x < 0) return -1;
-  else if (x > 0) return 1;
-  else return 0;
-}
-
-float movingAverageTurn(int turn) {
-
-  if (turn = !0) {
-    sum++;
-  }
-  else {
-    sum = sum - sign(sum);
-  }
-  average = sum / 10;
-  return average;
+float Average(int Array[], int length){
+	int sum = 0;
+	for(int i = 0; i < length; i++){
+		sum += Array[i];
+	}
+	
+	return sum/length;
 }
 
 void move_servos(float baseSpeed, float offset)
@@ -138,7 +127,7 @@ void loop()
     if (rechtdoor > 20) {
       move_servos(2 * baseSpeed, 0);
     }
-    headpos = movingAverageTurn(0);
+	TurningAverage[FilterIndex] = 0;
   }
   else if (IR_left == HIGH && IR_right == LOW) {
     // if line is detected by left side
@@ -149,7 +138,7 @@ void loop()
       move_servos(baseSpeed, -2 * alpha);
     }
     move_servos(baseSpeed, -alpha);
-    headpos = movingAverageTurn(-1);
+	TurningAverage[FilterIndex] = -1;
 
   } else if (IR_left == LOW && IR_right == HIGH) {
     // if line is detected by right side
@@ -160,7 +149,7 @@ void loop()
       move_servos(baseSpeed, 2 * alpha);
     }
     move_servos(baseSpeed, alpha);
-    headpos = movingAverageTurn(1);
+	TurningAverage[FilterIndex] = 1;
   } else if (IR_left == HIGH && IR_right == HIGH && turnright < 6 && turnleft < 6) {
 
     // if both detect a line (consider it as no line for now)
@@ -170,10 +159,12 @@ void loop()
     delay(1000);
     move_servos(baseSpeed, 0);
     delay(500);
-    headpos = movingAverageTurn(0);
+	TurningAverage[FilterIndex] = 0;
     // Intersection protocol
   }
-  servo_head.write(90+headpos*gamma);
+  
+  FilterIndex = (FilterIndex + 1) % FilterLength;
+  servo_head.write(90+Average(TurningAverage, FilterLength)*gamma);
 
   //    Serial.print("LEFT: ");
   //    Serial.print(turnleft);
