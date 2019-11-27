@@ -101,59 +101,52 @@ void loop()
     IR_left = digitalRead(pin_IR_left);
     IR_right = digitalRead(pin_IR_right);
 
-    //Sharp corner protocol right
-    if(IR_right < rightThreshold && turnright > 4){   //right sensor has detected white after sharp turn
+    if(IR_right == LOW && turnright > 6){
       turnright = 0;
-      move_servos(baseSpeed, 1);                      //turn a bit further for improved corner handling
+      move_servos(baseSpeed, 1);
       delay(100);
-      while(IR_left > leftThreshold){                 //drive forward while left sensor still detects black
+      while(IR_left == HIGH){
         move_servos(baseSpeed, 0);
-        IR_left = analogRead(pin_IR_left);
-        //Serial.println("Hallo");
+        IR_left = digitalRead(pin_IR_left);
         }
     }
-    //Sharp corner protocol left
-    if(IR_left < leftThreshold && turnleft > 4){
+    if(IR_left == LOW && turnleft > 6){
       turnleft = 0;
-      move_servos(baseSpeed, -1);
+      move_servos(baseSpeed, -alpha);
       delay(100);
-      while(IR_right > rightThreshold){
+      while(IR_right == HIGH){
         move_servos(baseSpeed, 0);
-        IR_right = analogRead(pin_IR_right);
-        //Serial.println("Hallo");
+        IR_right = digitalRead(pin_IR_right);
         }
     }
 
-    if(IR_right < rightThreshold){
+    if(IR_right == LOW){
       turnright = 0;
     }
-    if(IR_left < leftThreshold){
+    if(IR_left == LOW){
       turnleft = 0;
     }
-    
-    if(IR_left < leftThreshold && IR_right < rightThreshold){
+
+    if(IR_left == LOW && IR_right == LOW){
     // If no line is detected
-    StartTime = 0;
     move_servos(baseSpeed, 0);
+    rechtdoor++;
+    if(rechtdoor>20){
+      move_servos(2*baseSpeed, 0);
+      }
     
-    }else if (IR_left > leftThreshold && IR_right < rightThreshold) {
+    }else if (IR_left == HIGH && IR_right == LOW) {
       // if line is detected by left side
       turnleft ++;
+      rechtdoor = 0;
       // if StartTime is not set set it
-      if(!StartTime){
-        StartTime = millis();
+      if(turnleft > 10){
+      move_servos(baseSpeed, -2*alpha);
       }
-    move_servos(baseSpeed, -alpha*(millis() - StartTime));
-
+      move_servos(baseSpeed, -alpha);
   
-    }else if (IR_left < leftThreshold && IR_right > rightThreshold) {
+    }else if (IR_left == LOW && IR_right == HIGH) {
       // if line is detected by right side
-<<<<<<< Updated upstream
-      turnright ++;
-      // if StartTime is not set set it
-      if(!StartTime){
-        StartTime = millis();
-=======
     turnright ++;
     rechtdoor = 0;
       // if StartTime is not set set it 
@@ -162,11 +155,10 @@ void loop()
       }
     move_servos(baseSpeed, alpha);
  
-    }else if(IR_left == HIGH && IR_right == HIGH && turnright < 6 && turnleft < 6 && crossingsPassed == 0){
+    }else if(IR_left == HIGH && IR_right == HIGH && turnright < 6 && turnleft < 6){
      
     // if both detect a line (consider it as no line for now)
     rechtdoor = 0;
-    StartTime = 0;
     waitMode = true;
     crossingsPassed++;
     move_servos(0, 0);
@@ -174,69 +166,25 @@ void loop()
     Serial.print(1);
     // Intersection protocol
     }
+        
     else if(IR_left == HIGH && IR_right == HIGH && turnright < 6 && turnleft < 6 && crossingsPassed > 0){
      
     // if both detect a line (consider it as no line for now)
     rechtdoor = 0;
     StartTime = 0;
-   crossingsPassed = (crossingsPassed + 1)%3 ;
-      move_servos(baseSpeed,0);
+    crossingsPassed = (crossingsPassed + 1)%3 ;
+    move_servos(baseSpeed,0);
     // Intersection protocol
->>>>>>> Stashed changes
-    }
-    move_servos(baseSpeed, alpha*(millis() - StartTime));
-
-    }else if(IR_left > leftThreshold && IR_right > rightThreshold && turnright == 0 && turnleft == 0 && crossingsPassed = 0){
-
-     waitMode = true;
-    crossingsPassed++;
-    move_servos(0,0);
-    Serial.print(1);
-    }
-    else if(IR_left > leftThreshold && IR_right > rightThreshold && turnright == 0 && turnleft == 0&& inMiddle){
-      crossingsPassed = (crossingsPassed + 1)%3 ;
-      move_servos(baseSpeed,0);
-    }
-  }
-  else{
-      if(Serial.available()>0){
-      incomingByte = Serial.read();
-      if (incomingByte == 49){
-      waitMode = false;
-  }
-  }
-
-    
-  }
-  
-  
-//    Serial.print("Left sensor value: ");
-//    Serial.print(IR_left);
-//    Serial.print("; right sensor value: ");
-//    Serial.print(IR_right);
-//    Serial.print("; CountLeft: ");
-//    Serial.print(turnleft);
-//    Serial.print("; CountRight: ");
-//    Serial.print(turnright);
-//    Serial.println();
-    
-<<<<<<< Updated upstream
-=======
   }
   else if (waitMode == true){
       if(Serial.available()>0){
-      incomingByte = Serial.read();
+        incomingByte = Serial.read();
       if (incomingByte == 31){
-      waitMode = false;
-      move_servos(baseSpeed,0);
-      delay(500);
+        waitMode = false;
+        move_servos(baseSpeed,0);
+        delay(500);
+      }
+      }
   }
-      }}
-  
-   // Serial.print("LEFT: ");
-    //Serial.print(turnleft);
-    //Serial.print(" RIGHT: ");
-    //Serial.print(turnright);
-    //Serial.println();
->>>>>>> Stashed changes
+  }
 }
