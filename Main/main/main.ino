@@ -35,15 +35,6 @@ int crossingsPassed = 0;
 #define STRING(name) #name
 #define TOSTRING(x) STRING(x)
 
-// initialize the LED light on the board
-void led_init(void)
-{
-  // set the pin mode for the LED light pin to OUTPUT
-  pinMode(LED_BUILTIN,   OUTPUT);
-  // turn the LED off
-  digitalWrite(LED_BUILTIN,   LOW);
-}
-
 // the xbee_init function initializes the XBee Zigbee module
 // When the program is *running*, the switch on the wireless proto shield should be in the position 'MICRO'.
 // During programming of the Arduino, the switch should be in the position 'USB'.
@@ -62,7 +53,6 @@ void xbee_init(void)
   Serial.print("ATCN\r");                     // exit command mode and return to transparent mode, communicate all data on the serial link onto the wireless network
 }
 
-
 void move_servos(float baseSpeed, float offset)
 {
   float speed_left = baseSpeed +  offset;
@@ -76,31 +66,24 @@ void move_servos(float baseSpeed, float offset)
 }
 
 void setup() 
-{
+{ 
   xbee_init();
-  // initialize the LED light on the Arduino board
-  led_init();
   Serial.begin(9600);
-  // send something on the wireless network
   Serial.println("This is the XBee - Broadcast program.");
   
   servo_left.attach(pin_Servo_left);
   servo_right.attach(pin_Servo_right);
 
-  // Init servo motors with 0
   servo_right.write(90);
   servo_right.write(90);
 }
 
 void loop()
 {    
-
-  if(!waitMode){
-  // Read from IR sensors
     IR_left = digitalRead(pin_IR_left);
     IR_right = digitalRead(pin_IR_right);
-
-    if(IR_right == LOW && turnright > 6){
+  if(!waitMode){
+      if(IR_right == LOW && turnright > 6){
       turnright = 0;
       move_servos(baseSpeed, alpha);
       delay(100);
@@ -118,7 +101,6 @@ void loop()
         IR_right = digitalRead(pin_IR_right);
         }
     }
-
     if(IR_right == LOW){
       turnright = 0;
     }
@@ -158,7 +140,7 @@ void loop()
     waitMode = true;
     crossingsPassed++;
     move_servos(0, 0);
-    //delay(500);
+    //delay(100);
     Serial.print(1);
     // Intersection protocol
     }
@@ -170,16 +152,20 @@ void loop()
     crossingsPassed = (crossingsPassed + 1)%3 ;
     move_servos(baseSpeed,0);
     // Intersection protocol
-  }
+  }}
   else if (waitMode == true){
       if(Serial.available()>0){
         incomingByte = Serial.read();
       if (incomingByte == 49){
         waitMode = false;
         move_servos(baseSpeed,0);
-        delay(500);
+        delay(100);
       }
       }
   }
+//  Serial.print("LEFT: ");
+//  Serial.print(turnleft);
+//  Serial.print(" RIGHT: ");
+//  Serial.print(turnright);
+//  Serial.println();
   }
-}
