@@ -13,16 +13,14 @@ const int pin_Servo_right = 12;
 
 const int pin_IR_left = A0;       
 const int pin_IR_right = A1;
+
 int incomingByte = 0;
 int IR_left = 0;
 int IR_right = 0;
-int leftThreshold;
-int rightThreshold;
-
 int turnleft = 0;
 int turnright = 0;
-
-const float alpha = 0.0005;
+int rechtdoor = 0;
+const float alpha = 0.1;
 unsigned long StartTime = 0;
 float baseSpeed = -0.05;
 
@@ -33,7 +31,6 @@ float baseSpeed = -0.05;
 bool waitMode = false;
 int crossingsPassed = 0;
 int incomingByte = 0;
-
 
 // some macros needed for the xbee_init function. Do not touch :-).
 #define STRING(name) #name
@@ -47,7 +44,6 @@ void led_init(void)
   // turn the LED off
   digitalWrite(LED_BUILTIN,   LOW);
 }
-
 
 // the xbee_init function initializes the XBee Zigbee module
 // When the program is *running*, the switch on the wireless proto shield should be in the position 'MICRO'.
@@ -70,15 +66,14 @@ void xbee_init(void)
 
 void move_servos(float baseSpeed, float offset)
 {
-
   float speed_left = baseSpeed +  offset;
   float speed_right = -baseSpeed + offset;
 
   speed_left = constrain(speed_left, -1, 1);
   speed_right = constrain(speed_right, -1, 1);
       
-    servo_left.write(90+speed_left*90);
-    servo_right.write(90+speed_right*90);
+  servo_left.write(90+speed_left*90);
+  servo_right.write(90+speed_right*90);
 }
 
 void setup() 
@@ -93,13 +88,9 @@ void setup()
   servo_left.attach(pin_Servo_left);
   servo_right.attach(pin_Servo_right);
 
-  IR_left = analogRead(pin_IR_left);
-  IR_right = analogRead(pin_IR_right);
-  
   // Init servo motors with 0
   servo_right.write(90);
   servo_right.write(90);
-
 }
 
 void loop()
@@ -107,8 +98,8 @@ void loop()
 
   if(!waitMode){
   // Read from IR sensors
-    IR_left = analogRead(pin_IR_left);
-    IR_right = analogRead(pin_IR_right);               //digitalRead would be preffered.
+    IR_left = digitalRead(pin_IR_left);
+    IR_right = digitalRead(pin_IR_right);
 
     //Sharp corner protocol right
     if(IR_right < rightThreshold && turnright > 4){   //right sensor has detected white after sharp turn
