@@ -26,25 +26,19 @@ const float alpha = 0.0005;
 unsigned long StartTime = 0;
 float baseSpeed = -0.05;
 
-<<<<<<< Updated upstream
-=======
-
->>>>>>> Stashed changes
 //Zigbee implementation
 #define SELF     43
 #define PAN_ID           "A008"
 #define CHANNEL_ID       "0F"
 bool waitMode = false;
 int crossingsPassed = 0;
-<<<<<<< Updated upstream
-
-=======
 int incomingByte = 0;
->>>>>>> Stashed changes
+
 
 // some macros needed for the xbee_init function. Do not touch :-).
 #define STRING(name) #name
 #define TOSTRING(x) STRING(x)
+
 // initialize the LED light on the board
 void led_init(void)
 {
@@ -74,11 +68,6 @@ void xbee_init(void)
 }
 
 
-<<<<<<< Updated upstream
-=======
-
-
->>>>>>> Stashed changes
 void move_servos(float baseSpeed, float offset)
 {
 
@@ -94,44 +83,28 @@ void move_servos(float baseSpeed, float offset)
 
 void setup() 
 {
-<<<<<<< Updated upstream
-    xbee_init();
-=======
-
-      xbee_init();
->>>>>>> Stashed changes
+  xbee_init();
   // initialize the LED light on the Arduino board
   led_init();
+  Serial.begin(9600);
   // send something on the wireless network
   Serial.println("This is the XBee - Broadcast program.");
-<<<<<<< Updated upstream
- // Serial.begin(9600);
-=======
-  //Serial.begin(9600);
->>>>>>> Stashed changes
+  
   servo_left.attach(pin_Servo_left);
   servo_right.attach(pin_Servo_right);
 
   IR_left = analogRead(pin_IR_left);
   IR_right = analogRead(pin_IR_right);
-
-  leftThreshold = IR_left + 250;
-  rightThreshold = IR_right + 250;
   
   // Init servo motors with 0
   servo_right.write(90);
   servo_right.write(90);
 
-  leftThreshold = IR_left + 50;
-  rightThreshold = IR_right + 50;
 }
 
 void loop()
 {    
-<<<<<<< Updated upstream
-=======
 
->>>>>>> Stashed changes
   if(!waitMode){
   // Read from IR sensors
     IR_left = analogRead(pin_IR_left);
