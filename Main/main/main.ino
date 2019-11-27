@@ -30,7 +30,6 @@ float baseSpeed = -0.05;
 #define CHANNEL_ID       "0F"
 bool waitMode = false;
 int crossingsPassed = 0;
-int incomingByte = 0;
 
 // some macros needed for the xbee_init function. Do not touch :-).
 #define STRING(name) #name
@@ -103,7 +102,7 @@ void loop()
 
     if(IR_right == LOW && turnright > 6){
       turnright = 0;
-      move_servos(baseSpeed, 1);
+      move_servos(baseSpeed, alpha);
       delay(100);
       while(IR_left == HIGH){
         move_servos(baseSpeed, 0);
@@ -139,7 +138,6 @@ void loop()
       // if line is detected by left side
       turnleft ++;
       rechtdoor = 0;
-      // if StartTime is not set set it
       if(turnleft > 10){
       move_servos(baseSpeed, -2*alpha);
       }
@@ -156,19 +154,16 @@ void loop()
     move_servos(baseSpeed, alpha);
  
     }else if(IR_left == HIGH && IR_right == HIGH && turnright < 6 && turnleft < 6){
-     
-    // if both detect a line (consider it as no line for now)
     rechtdoor = 0;
     waitMode = true;
     crossingsPassed++;
     move_servos(0, 0);
-    delay(500);
+    //delay(500);
     Serial.print(1);
     // Intersection protocol
     }
         
     else if(IR_left == HIGH && IR_right == HIGH && turnright < 6 && turnleft < 6 && crossingsPassed > 0){
-     
     // if both detect a line (consider it as no line for now)
     rechtdoor = 0;
     StartTime = 0;
@@ -179,7 +174,7 @@ void loop()
   else if (waitMode == true){
       if(Serial.available()>0){
         incomingByte = Serial.read();
-      if (incomingByte == 31){
+      if (incomingByte == 49){
         waitMode = false;
         move_servos(baseSpeed,0);
         delay(500);
