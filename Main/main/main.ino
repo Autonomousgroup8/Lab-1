@@ -83,30 +83,30 @@ void loop()
     IR_left = digitalRead(pin_IR_left);
     IR_right = digitalRead(pin_IR_right);
   if(!waitMode){
-      if(IR_right == LOW && turnright > 6){
-      turnright = 0;
-      move_servos(baseSpeed, alpha);
-      delay(100);
-      while(IR_left == HIGH){
-        move_servos(baseSpeed, 0);
-        IR_left = digitalRead(pin_IR_left);
-        }
-    }
-    if(IR_left == LOW && turnleft > 6){
-      turnleft = 0;
-      move_servos(baseSpeed, -alpha);
-      delay(100);
-      while(IR_right == HIGH){
-        move_servos(baseSpeed, 0);
-        IR_right = digitalRead(pin_IR_right);
-        }
-    }
-    if(IR_right == LOW){
-      turnright = 0;
-    }
-    if(IR_left == LOW){
-      turnleft = 0;
-    }
+//      if(IR_right == LOW && turnright > 6){
+//      turnright = 0;
+//      move_servos(baseSpeed, alpha);
+//      delay(100);
+//      while(IR_left == HIGH){
+//        move_servos(baseSpeed, 0);
+//        IR_left = digitalRead(pin_IR_left);
+//        }
+//    }
+//    if(IR_left == LOW && turnleft > 6){
+//      turnleft = 0;
+//      move_servos(baseSpeed, -alpha);
+//      delay(100);
+//      while(IR_right == HIGH){
+//        move_servos(baseSpeed, 0);
+//        IR_right = digitalRead(pin_IR_right);
+//        }
+//    }
+//    if(IR_right == LOW){
+//      turnright = 0;
+//    }
+//    if(IR_left == LOW){
+//      turnleft = 0;
+//    }
 
     if(IR_left == LOW && IR_right == LOW){
     // If no line is detected
@@ -129,37 +129,46 @@ void loop()
       // if line is detected by right side
     turnright ++;
     rechtdoor = 0;
-      // if StartTime is not set set it 
     if(turnright > 10){
       move_servos(baseSpeed, 2*alpha);
       }
     move_servos(baseSpeed, alpha);
  
-    }else if(IR_left == HIGH && IR_right == HIGH && turnright < 6 && turnleft < 6){
+    }else if(IR_left == HIGH && IR_right == HIGH && crossingsPassed == 0){
     rechtdoor = 0;
     waitMode = true;
     crossingsPassed++;
     move_servos(0, 0);
     //delay(100);
-    Serial.print(1);
+    //erial.println(1);
+    Serial.print("Crossing: ");
+    Serial.print(crossingsPassed);
+    Serial.println();
     // Intersection protocol
     }
         
-    else if(IR_left == HIGH && IR_right == HIGH && turnright < 6 && turnleft < 6 && crossingsPassed > 0){
+    else if(IR_left == HIGH && IR_right == HIGH && crossingsPassed > 0){
     // if both detect a line (consider it as no line for now)
     rechtdoor = 0;
     StartTime = 0;
-    crossingsPassed = (crossingsPassed + 1)%3 ;
+    crossingsPassed++;
+    Serial.print("Crossing2: ");
+    Serial.print(crossingsPassed);
+    Serial.println();
+    if(crossingsPassed>10){
+      crossingsPassed ==0;
+      } ;
     move_servos(baseSpeed,0);
     // Intersection protocol
-  }}
+  }
+  }
   else if (waitMode == true){
       if(Serial.available()>0){
         incomingByte = Serial.read();
       if (incomingByte == 49){
         waitMode = false;
         move_servos(baseSpeed,0);
-        delay(100);
+        delay(200);
       }
       }
   }
