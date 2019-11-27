@@ -9,9 +9,11 @@
 NewPing sonar(TRIGGER_PIN, ECHO_PIN, MAX_DISTANCE);
 Servo servo_left;
 Servo servo_right;
+Servo servo_head;
 
 const int pin_Servo_left = 13;
 const int pin_Servo_right = 12;
+const int pin_Servo_head = 11;
 
 const int pin_IR_left = A0;
 const int pin_IR_right = A1;
@@ -23,9 +25,15 @@ int turnright = 0;
 int rechtdoor = 0;
 const float alpha = 0.15;
 const float beta = 0.002;
+const float gamma = 10;
 unsigned long StartTime = 0;
 float baseSpeed = 0.05;
 float ACCSpeed = 0.05;
+int sum = 0;
+int average = 0;
+float headpos = 0;
+
+
 
 int sign(int x) {
   if (x < 0) return -1;
@@ -42,7 +50,7 @@ float movingAverageTurn(int turn) {
     sum = sum - sign(sum);
   }
   average = sum / 10;
-  return average
+  return average;
 }
 
 void move_servos(float baseSpeed, float offset)
@@ -63,8 +71,9 @@ void setup()
   Serial.begin(9600);
   servo_left.attach(pin_Servo_left);
   servo_right.attach(pin_Servo_right);
+  servo_head.attach(pin_Servo_head);
 
-  servo_right.write(90);
+  servo_left.write(90);
   servo_right.write(90);
 }
 
@@ -129,7 +138,7 @@ void loop()
     if (rechtdoor > 20) {
       move_servos(2 * baseSpeed, 0);
     }
-    headpos = moveaverage(0);
+    headpos = movingAverageTurn(0);
   }
   else if (IR_left == HIGH && IR_right == LOW) {
     // if line is detected by left side
@@ -140,7 +149,7 @@ void loop()
       move_servos(baseSpeed, -2 * alpha);
     }
     move_servos(baseSpeed, -alpha);
-    headpos = moveaverage(-1);
+    headpos = movingAverageTurn(-1);
 
   } else if (IR_left == LOW && IR_right == HIGH) {
     // if line is detected by right side
@@ -151,7 +160,7 @@ void loop()
       move_servos(baseSpeed, 2 * alpha);
     }
     move_servos(baseSpeed, alpha);
-    headpos = moveaverage(1);
+    headpos = movingAverageTurn(1);
   } else if (IR_left == HIGH && IR_right == HIGH && turnright < 6 && turnleft < 6) {
 
     // if both detect a line (consider it as no line for now)
@@ -161,9 +170,10 @@ void loop()
     delay(1000);
     move_servos(baseSpeed, 0);
     delay(500);
-    headpos = moveaverage(0);
+    headpos = movingAverageTurn(0);
     // Intersection protocol
   }
+  servo_head.write(90+headpos*gamma);
 
   //    Serial.print("LEFT: ");
   //    Serial.print(turnleft);
