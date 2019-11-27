@@ -20,9 +20,10 @@ int IR_right = 0;
 int turnleft = 0;
 int turnright = 0;
 int rechtdoor = 0;
-const float alpha = 0.1;
+int trash = 0;
+const float alpha = 0.3;
 unsigned long StartTime = 0;
-float baseSpeed = -0.05;
+float baseSpeed = -0.25;
 
 //Zigbee implementation
 #define SELF     43
@@ -140,32 +141,35 @@ void loop()
     crossingsPassed++;
     move_servos(0, 0);
     //delay(100);
-    //erial.println(1);
-    Serial.print("Crossing: ");
-    Serial.print(crossingsPassed);
+    Serial.print("Robot 2: ");
+    Serial.print(6);
     Serial.println();
+    trash = Serial.read();
+//    Serial.print("Crossing: ");
+//    Serial.print(crossingsPassed);
+//    Serial.println();
     // Intersection protocol
     }
         
     else if(IR_left == HIGH && IR_right == HIGH && crossingsPassed > 0){
     // if both detect a line (consider it as no line for now)
     rechtdoor = 0;
-    StartTime = 0;
     crossingsPassed++;
-    Serial.print("Crossing2: ");
-    Serial.print(crossingsPassed);
-    Serial.println();
-    if(crossingsPassed>10){
-      crossingsPassed ==0;
-      } ;
+//    Serial.print("Crossing2: ");
+//    Serial.print(crossingsPassed);
+//    Serial.println();
+    if(crossingsPassed > 28){
+      crossingsPassed = 0;
+      }
     move_servos(baseSpeed,0);
     // Intersection protocol
   }
-  }
-  else if (waitMode == true){
+}
+else if (waitMode == true){
+    //Serial.println("IK WACHT");
       if(Serial.available()>0){
         incomingByte = Serial.read();
-      if (incomingByte == 49){
+      if (incomingByte == 54){
         waitMode = false;
         move_servos(baseSpeed,0);
         delay(200);
