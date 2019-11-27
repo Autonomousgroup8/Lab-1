@@ -4,7 +4,7 @@
 #define TRIGGER_PIN  9
 #define ECHO_PIN     9
 #define MAX_DISTANCE 200
-#define Ref_Distance 7
+#define Ref_Distance 13
 
 NewPing sonar(TRIGGER_PIN, ECHO_PIN, MAX_DISTANCE);
 Servo servo_left;
@@ -21,10 +21,11 @@ int IR_right = 0;
 int turnleft = 0;
 int turnright = 0;
 int rechtdoor = 0;
-const float alpha = 0.1;
-const float beta = 0.0002;
+const float alpha = 0.3;
+const float beta = 0.002;
 unsigned long StartTime = 0;
 float baseSpeed = 0.05;
+float ACCSpeed = 0.25;
 
 void move_servos(float baseSpeed, float offset)
 {
@@ -51,26 +52,27 @@ void setup()
 
 float ACC(){
 	int Distance = sonar.ping_cm();
-	
+  Serial.println(Distance);	
 	if(Distance > 49 || Distance == 0){
-		// Nothing in front
-		return baseSpeed;
-	}else if (Distance < 50 && Distance > Ref_Distance + 2){
-		// Larger than preffered distance
-		return baseSpeed + beta*(Distance - Ref_Distance);
-	}else if (Distance < Ref_Distance - 2){
-		// too small
-		return max(baseSpeed - abs(2*beta*(Distance - Ref_Distance)), 0);
+		// Nothing in front, you are the leader
+		return ACCSpeed;
+	}else if (Distance < 50 && Distance > Ref_Distance + 5){
+		// Larger than preffered distance, gradruately speed up
+		return ACCSpeed + beta*(Distance - Ref_Distance);
+	}else if (Distance < Ref_Distance - 3){
+		// too small, gradruatly slow down
+		return max(ACCSpeed - abs(3*beta*(Distance - Ref_Distance)), 0);
 	}else{
-		// in the window
-		return baseSpeed + 0.1*beta*(Distance - Ref_Distance);
+		// in the window, only make small adjustments.
+		return ACCSpeed + 0.1*beta*(Distance - Ref_Distance);
 	}
 }
 
 void loop()
 {    
 	baseSpeed = ACC();
-	
+	Serial.print(baseSpeed);
+  
   // Read from IR sensors
     IR_left = digitalRead(pin_IR_left);
     IR_right = digitalRead(pin_IR_right);
@@ -142,9 +144,9 @@ void loop()
     // Intersection protocol
     }
     
-    Serial.print("LEFT: ");
-    Serial.print(turnleft);
-    Serial.print(" RIGHT: ");
-    Serial.print(turnright);
-    Serial.println();
+//    Serial.print("LEFT: ");
+//    Serial.print(turnleft);
+//    Serial.print(" RIGHT: ");
+//    Serial.print(turnright);
+//    Serial.println();
 }
