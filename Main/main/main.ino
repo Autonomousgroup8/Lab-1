@@ -21,6 +21,8 @@ int turnleft = 0;
 int turnright = 0;
 int rechtdoor = 0;
 int trash = 0;
+int prevCross = 0;
+int resetComm = 0;
 const float alpha = 0.3;
 unsigned long StartTime = 0;
 float baseSpeed = -0.25;
@@ -113,6 +115,14 @@ void loop()
     // If no line is detected
     move_servos(baseSpeed, 0);
     rechtdoor++;
+    if(prevCross == 1){
+      crossingsPassed++;
+      Serial.print(crossingsPassed);
+      prevCross = 0;
+      }
+    if(resetComm == 1){
+      crossingsPassed = 0;
+      }
     if(rechtdoor>20){
       move_servos(2*baseSpeed, 0);
       }
@@ -138,12 +148,11 @@ void loop()
     }else if(IR_left == HIGH && IR_right == HIGH && crossingsPassed == 0){
     rechtdoor = 0;
     waitMode = true;
-    crossingsPassed++;
+    //crossingsPassed++;
+    prevCross = 1;
     move_servos(0, 0);
-    //delay(100);
-    Serial.print("Robot 2: ");
     Serial.print(6);
-    Serial.println();
+    //Serial.println();
     trash = Serial.read();
 //    Serial.print("Crossing: ");
 //    Serial.print(crossingsPassed);
@@ -154,11 +163,11 @@ void loop()
     else if(IR_left == HIGH && IR_right == HIGH && crossingsPassed > 0){
     // if both detect a line (consider it as no line for now)
     rechtdoor = 0;
-    crossingsPassed++;
-//    Serial.print("Crossing2: ");
-//    Serial.print(crossingsPassed);
-//    Serial.println();
-    if(crossingsPassed > 28){
+    //crossingsPassed++;
+    prevCross = 1;
+
+    if(crossingsPassed > 2){
+      resetComm = 1;
       crossingsPassed = 0;
       }
     move_servos(baseSpeed,0);
@@ -172,6 +181,7 @@ else if (waitMode == true){
       if (incomingByte == 54){
         waitMode = false;
         move_servos(baseSpeed,0);
+        
         delay(200);
       }
       }
