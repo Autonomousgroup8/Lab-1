@@ -8,10 +8,10 @@
 Servo servo_left;
 Servo servo_right;
 
-const int pin_Servo_left = 13;       
+const int pin_Servo_left = 13;
 const int pin_Servo_right = 12;
 
-const int pin_IR_left = A0;       
+const int pin_IR_left = A0;
 const int pin_IR_right = A1;
 
 int incomingByte = 0;
@@ -22,7 +22,6 @@ int turnright = 0;
 int rechtdoor = 0;
 int trash = 0;
 int prevCross = 0;
-int resetComm = 0;
 const float alpha = 0.3;
 unsigned long StartTime = 0;
 float baseSpeed = -0.25;
@@ -63,17 +62,17 @@ void move_servos(float baseSpeed, float offset)
 
   speed_left = constrain(speed_left, -1, 1);
   speed_right = constrain(speed_right, -1, 1);
-      
-  servo_left.write(90+speed_left*90);
-  servo_right.write(90+speed_right*90);
+
+  servo_left.write(90 + speed_left * 90);
+  servo_right.write(90 + speed_right * 90);
 }
 
-void setup() 
-{ 
+void setup()
+{
   xbee_init();
   Serial.begin(9600);
   Serial.println("This is the XBee - Broadcast program.");
-  
+
   servo_left.attach(pin_Servo_left);
   servo_right.attach(pin_Servo_right);
 
@@ -82,113 +81,67 @@ void setup()
 }
 
 void loop()
-{    
-    IR_left = digitalRead(pin_IR_left);
-    IR_right = digitalRead(pin_IR_right);
-  if(!waitMode){
-//      if(IR_right == LOW && turnright > 6){
-//      turnright = 0;
-//      move_servos(baseSpeed, alpha);
-//      delay(100);
-//      while(IR_left == HIGH){
-//        move_servos(baseSpeed, 0);
-//        IR_left = digitalRead(pin_IR_left);
-//        }
-//    }
-//    if(IR_left == LOW && turnleft > 6){
-//      turnleft = 0;
-//      move_servos(baseSpeed, -alpha);
-//      delay(100);
-//      while(IR_right == HIGH){
-//        move_servos(baseSpeed, 0);
-//        IR_right = digitalRead(pin_IR_right);
-//        }
-//    }
-//    if(IR_right == LOW){
-//      turnright = 0;
-//    }
-//    if(IR_left == LOW){
-//      turnleft = 0;
-//    }
-
-    if(IR_left == LOW && IR_right == LOW){
-    // If no line is detected
-    move_servos(baseSpeed, 0);
-    rechtdoor++;
-    if(prevCross == 1){
-      crossingsPassed++;
+{
+  IR_left = digitalRead(pin_IR_left);
+  IR_right = digitalRead(pin_IR_right);
+  if (!waitMode) {
+    if (IR_left == LOW && IR_right == LOW) {
+      // If no line is detected
+      move_servos(baseSpeed, 0);
+      rechtdoor++;
+      if (prevCross == 1) {
+        crossingsPassed++;
+        prevCross = 0;
+      }
+      if (crossingsPassed > 2) {
+        crossingsPassed = 0;
+      }
       Serial.print(crossingsPassed);
-      prevCross = 0;
+      if (rechtdoor > 20) {
+        move_servos(2 * baseSpeed, 0);
       }
-    if(resetComm == 1){
-      crossingsPassed = 0;
-      }
-    if(rechtdoor>20){
-      move_servos(2*baseSpeed, 0);
-      }
-    
-    }else if (IR_left == HIGH && IR_right == LOW) {
+
+    } else if (IR_left == HIGH && IR_right == LOW) {
       // if line is detected by left side
       turnleft ++;
       rechtdoor = 0;
-      if(turnleft > 10){
-      move_servos(baseSpeed, -2*alpha);
+      if (turnleft > 10) {
+        move_servos(baseSpeed, -2 * alpha);
       }
       move_servos(baseSpeed, -alpha);
-  
-    }else if (IR_left == LOW && IR_right == HIGH) {
-      // if line is detected by right side
-    turnright ++;
-    rechtdoor = 0;
-    if(turnright > 10){
-      move_servos(baseSpeed, 2*alpha);
-      }
-    move_servos(baseSpeed, alpha);
- 
-    }else if(IR_left == HIGH && IR_right == HIGH && crossingsPassed == 0){
-    rechtdoor = 0;
-    waitMode = true;
-    //crossingsPassed++;
-    prevCross = 1;
-    move_servos(0, 0);
-    Serial.print(6);
-    //Serial.println();
-    trash = Serial.read();
-//    Serial.print("Crossing: ");
-//    Serial.print(crossingsPassed);
-//    Serial.println();
-    // Intersection protocol
-    }
-        
-    else if(IR_left == HIGH && IR_right == HIGH && crossingsPassed > 0){
-    // if both detect a line (consider it as no line for now)
-    rechtdoor = 0;
-    //crossingsPassed++;
-    prevCross = 1;
 
-    if(crossingsPassed > 2){
-      resetComm = 1;
-      crossingsPassed = 0;
+    } else if (IR_left == LOW && IR_right == HIGH) {
+      // if line is detected by right side
+      turnright ++;
+      rechtdoor = 0;
+      if (turnright > 10) {
+        move_servos(baseSpeed, 2 * alpha);
       }
-    move_servos(baseSpeed,0);
-    // Intersection protocol
-  }
-}
-else if (waitMode == true){
+      move_servos(baseSpeed, alpha);
+
+    } else if (IR_left == HIGH && IR_right == HIGH && crossingsPassed == 0) {
+      rechtdoor = 0;
+      waitMode = true;
+      prevCross = 1;
+      move_servos(0, 0);
+      Serial.print(6);
+      trash = Serial.read();
+    }
+    else if (IR_left == HIGH && IR_right == HIGH && crossingsPassed > 0) {
+      // if both detect a line (consider it as no line for now)
+      rechtdoor = 0;
+      prevCross = 1;
+      move_servos(baseSpeed, 0);
+    }
+  }else if (waitMode == true) {
     //Serial.println("IK WACHT");
-      if(Serial.available()>0){
-        incomingByte = Serial.read();
-      if (incomingByte == 54){
+    if (Serial.available() > 0) {
+      incomingByte = Serial.read();
+      if (incomingByte == 54) {
         waitMode = false;
-        move_servos(baseSpeed,0);
-        
+        move_servos(baseSpeed, 0);
         delay(200);
       }
-      }
+    }
   }
-//  Serial.print("LEFT: ");
-//  Serial.print(turnleft);
-//  Serial.print(" RIGHT: ");
-//  Serial.print(turnright);
-//  Serial.println();
-  }
+}
