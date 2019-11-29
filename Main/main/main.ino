@@ -26,7 +26,7 @@ int turnright = 0;
 int rechtdoor = 0;
 int trash = 0;
 int prevCross = 0;
-const float alpha = 0.15;
+const float alpha = 0.05;
 const float beta = 0.002;
 const float gamma = 10;
 unsigned long StartTime = 0;
@@ -61,7 +61,7 @@ float Average(int Array[], int length) {          //floating average over 10 cyc
 
   return sum / length;                            //calculate average of Array
 }
-void xbee_init(void){
+void xbee_init(void) {
   Serial.begin(9600);                         // set the baud rate to 9600 to match the baud rate of the xbee module
   Serial.flush();                             // make sure the buffer of the serial connection is empty
   Serial.print("+++");                        // sending the characters '+++' will bring the XBee module in its command mode (see https://cdn.sparkfun.com/assets/resources/2/9/22AT_Commands.pdf)
@@ -73,7 +73,7 @@ void xbee_init(void){
   Serial.print("ATCN\r");                     // exit command mode and return to transparent mode, communicate all data on the serial link onto the wireless network
 }
 
-void move_servos(float baseSpeed, float offset)   //mpve servos
+void move_servos(float baseSpeed, float offset) {  //mpve servos
   float speed_left = -baseSpeed +  offset;
   float speed_right = baseSpeed + offset;
 
@@ -99,7 +99,7 @@ void setup()
 
 float ACC() {                                                   //active cruise control algorithm, determines speed
   int Distance = sonar.ping_cm();
-  Serial.println(Distance);
+//  Serial.println(Distance);
   if (Distance > 49 || Distance == 0) {                         // Nothing in front, you are the leader
     return ACCSpeed;
   } else if (Distance < 50 && Distance > Ref_Distance + 5) {    // Larger than preffered distance, gradruately speed up
@@ -113,77 +113,78 @@ float ACC() {                                                   //active cruise 
 
 void loop()
 {
-  baseSpeed = ACC();                          //determine speed with Active cruise control.
-  Serial.print(baseSpeed);
-  // Read from IR sensors
-  IR_left = digitalRead(pin_IR_left);
-  IR_right = digitalRead(pin_IR_right);
+  if (!waitMode) {
+    baseSpeed = ACC();                          //determine speed with Active cruise control.
+//    Serial.print(baseSpeed);
+    // Read from IR sensors
+    IR_left = digitalRead(pin_IR_left);
+    IR_right = digitalRead(pin_IR_right);
 
-  if (IR_right == LOW && turnright > 6) {     //sharp corner protocol right
-    turnright = 0;
-    move_servos(baseSpeed, 1);
-    delay(100);
-    while (IR_left == HIGH) {
-      move_servos(baseSpeed, 0);
-      IR_left = digitalRead(pin_IR_left);
+    if (IR_right == LOW && turnright > 6) {     //sharp corner protocol right
+      turnright = 0;
+      move_servos(baseSpeed, 1);
+      delay(100);
+      while (IR_left == HIGH) {
+        move_servos(baseSpeed, 0);
+        IR_left = digitalRead(pin_IR_left);
+      }
     }
-  }
-  if (IR_left == LOW && turnleft > 6) {     //sharp corner protocol right
-    turnleft = 0;
-    move_servos(baseSpeed, -alpha);
-    delay(100);
-    while (IR_right == HIGH) {
-      move_servos(baseSpeed, 0);
-      IR_right = digitalRead(pin_IR_right);
+    if (IR_left == LOW && turnleft > 6) {     //sharp corner protocol right
+      turnleft = 0;
+      move_servos(baseSpeed, -alpha);
+      delay(100);
+      while (IR_right == HIGH) {
+        move_servos(baseSpeed, 0);
+        IR_right = digitalRead(pin_IR_right);
+      }
     }
-  }
 
-  if (IR_right == LOW) {                    //reset consequetive right turns counter
-    turnright = 0;
-  }
-  if (IR_left == LOW) {                    //reset consequetive left turns counter
-    turnleft = 0;
-  }
+    if (IR_right == LOW) {                    //reset consequetive right turns counter
+      turnright = 0;
+    }
+    if (IR_left == LOW) {                    //reset consequetive left turns counter
+      turnleft = 0;
+    }
 
-  if (IR_left == LOW && IR_right == LOW) {      // If no line is detected
-    move_servos(baseSpeed, 0);
-    rechtdoor++;
-     if (prevCross == 1) {
+    if (IR_left == LOW && IR_right == LOW) {      // If no line is detected
+      move_servos(baseSpeed, 0);
+      rechtdoor++;
+      if (prevCross == 1) {
         crossingsPassed++;
         prevCross = 0;
       }
       if (crossingsPassed > 2) {
-        Serial.print(7);
+        Serial.print(6);
         crossingsPassed = 0;
       }
-    if (rechtdoor > 20) {                       //increase speed on long straights
-      move_servos(2 * baseSpeed, 0);
+      if (rechtdoor > 20) {                       //increase speed on long straights
+        move_servos(2 * baseSpeed, 0);
+      }
+      TurningAverage[FilterIndex] = 0;           //update average for head direction
     }
-    TurningAverage[FilterIndex] = 0;           //update average for head direction
-  }
-  else if (IR_left == HIGH && IR_right == LOW) { // if line is detected by left side
-    turnleft ++;
-    rechtdoor = 0;
-    if (turnleft > 10) {                         //on sharp corners turn faster
-      move_servos(baseSpeed, -2 * alpha);
-    }
-    move_servos(baseSpeed, -alpha);
-    TurningAverage[FilterIndex] = -1;           //update average for head direction
+    else if (IR_left == HIGH && IR_right == LOW) { // if line is detected by left side
+      turnleft ++;
+      rechtdoor = 0;
+      if (turnleft > 10) {                         //on sharp corners turn faster
+        move_servos(baseSpeed, -2 * alpha);
+      }
+      move_servos(baseSpeed, -alpha);
+      TurningAverage[FilterIndex] = -1;           //update average for head direction
 
-  } else if (IR_left == LOW && IR_right == HIGH) {    // if line is detected by right side
-    turnright ++;
-    rechtdoor = 0;
-    if (turnright > 10) {                         //on sharp corners turn faster
-      move_servos(baseSpeed, 2 * alpha);
-    }
-    move_servos(baseSpeed, alpha);
-    TurningAverage[FilterIndex] = 1;           //update average for head direction
-  } else if (IR_left == HIGH && IR_right == HIGH && crossingsPassed == 0) {
+    } else if (IR_left == LOW && IR_right == HIGH) {    // if line is detected by right side
+      turnright ++;
+      rechtdoor = 0;
+      if (turnright > 10) {                         //on sharp corners turn faster
+        move_servos(baseSpeed, 2 * alpha);
+      }
+      move_servos(baseSpeed, alpha);
+      TurningAverage[FilterIndex] = 1;           //update average for head direction
+    } else if (IR_left == HIGH && IR_right == HIGH && crossingsPassed == 0) {
       rechtdoor = 0;
       waitMode = true;
       prevCross = 1;
       move_servos(0, 0);
-      Serial.print(7);
+      Serial.print(6);
       trash = Serial.read();
     }
     else if (IR_left == HIGH && IR_right == HIGH && crossingsPassed > 0) {
@@ -192,11 +193,12 @@ void loop()
       prevCross = 1;
       move_servos(baseSpeed, 0);
     }
-  }else if (waitMode == true) {
+  }
+  else if (waitMode == true) {
     //Serial.println("IK WACHT");
     if (Serial.available() > 0) {
       incomingByte = Serial.read();
-      if (incomingByte == 54) {
+      if (incomingByte == 55) {
         waitMode = false;
         move_servos(baseSpeed, 0);
         delay(200);
