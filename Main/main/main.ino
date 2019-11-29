@@ -94,9 +94,9 @@ void loop()
         prevCross = 0;
       }
       if (crossingsPassed > 2) {
+        Serial.print(7);
         crossingsPassed = 0;
       }
-      Serial.print(crossingsPassed);
       if (rechtdoor > 20) {
         move_servos(2 * baseSpeed, 0);
       }
@@ -124,7 +124,7 @@ void loop()
       waitMode = true;
       prevCross = 1;
       move_servos(0, 0);
-      Serial.print(6);
+      Serial.print(7);
       trash = Serial.read();
     }
     else if (IR_left == HIGH && IR_right == HIGH && crossingsPassed > 0) {
