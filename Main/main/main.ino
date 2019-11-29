@@ -18,11 +18,14 @@ const int pin_Servo_head = 11;
 const int pin_IR_left = A0;
 const int pin_IR_right = A1;
 
+int incomingByte = 0;
 int IR_left = 0;
 int IR_right = 0;
 int turnleft = 0;
 int turnright = 0;
 int rechtdoor = 0;
+int trash = 0;
+int prevCross = 0;
 const float alpha = 0.15;
 const float beta = 0.002;
 const float gamma = 10;
@@ -32,6 +35,23 @@ float ACCSpeed = 0.05;
 const int FilterLength = 10;
 int TurningAverage[FilterLength];
 int FilterIndex = 0;
+//Zigbee implementation
+#define SELF     43
+#define PAN_ID           "A008"
+#define CHANNEL_ID       "0F"
+bool waitMode = false;
+int crossingsPassed = 0;
+
+// some macros needed for the xbee_init function. Do not touch :-).
+#define STRING(name) #name
+#define TOSTRING(x) STRING(x)
+
+// the xbee_init function initializes the XBee Zigbee module
+// When the program is *running*, the switch on the wireless proto shield should be in the position 'MICRO'.
+// During programming of the Arduino, the switch should be in the position 'USB'.
+// It will only work if the XBee module is set to communicate at 9600 baud. If it is not, the module needs to be reprogrammed
+// on the USB XBee dongle using the XCTU program.
+
 
 float Average(int Array[], int length) {          //floating average over 10 cycles
   int sum = 0;
@@ -41,12 +61,22 @@ float Average(int Array[], int length) {          //floating average over 10 cyc
 
   return sum / length;                            //calculate average of Array
 }
+void xbee_init(void){
+  Serial.begin(9600);                         // set the baud rate to 9600 to match the baud rate of the xbee module
+  Serial.flush();                             // make sure the buffer of the serial connection is empty
+  Serial.print("+++");                        // sending the characters '+++' will bring the XBee module in its command mode (see https://cdn.sparkfun.com/assets/resources/2/9/22AT_Commands.pdf)
+  delay(2000);                                // it will only go in command mode if there is a long enough pause after the '+++' characters. Wait two seconds.
+  Serial.print("ATCH " CHANNEL_ID "\r");      // set the channel to CHANNEL_ID
+  Serial.print("ATID " PAN_ID "\r");          // set the network PAN ID to PAN_ID
+  Serial.print("ATMY " TOSTRING(SELF) "\r");  // set the network ID of this module to SELF
+  Serial.print("ATDH 0000\rATDL FFFF\r");     // configure the modue to broadcast all messages to all other nodes in the PAN
+  Serial.print("ATCN\r");                     // exit command mode and return to transparent mode, communicate all data on the serial link onto the wireless network
+}
 
 void move_servos(float baseSpeed, float offset)   //mpve servos
-{
-
   float speed_left = -baseSpeed +  offset;
   float speed_right = baseSpeed + offset;
+
 
   speed_left = constrain(speed_left, -1, 1);
   speed_right = constrain(speed_right, -1, 1);
@@ -57,11 +87,12 @@ void move_servos(float baseSpeed, float offset)   //mpve servos
 
 void setup()
 {
+  xbee_init();
   Serial.begin(9600);
+  Serial.println("This is the XBee - Broadcast program.");
   servo_left.attach(pin_Servo_left);              //attach all servos
   servo_right.attach(pin_Servo_right);
   servo_head.attach(pin_Servo_head);
-
   servo_left.write(90);
   servo_right.write(90);
 }
@@ -117,6 +148,14 @@ void loop()
   if (IR_left == LOW && IR_right == LOW) {      // If no line is detected
     move_servos(baseSpeed, 0);
     rechtdoor++;
+     if (prevCross == 1) {
+        crossingsPassed++;
+        prevCross = 0;
+      }
+      if (crossingsPassed > 2) {
+        Serial.print(7);
+        crossingsPassed = 0;
+      }
     if (rechtdoor > 20) {                       //increase speed on long straights
       move_servos(2 * baseSpeed, 0);
     }
@@ -139,23 +178,32 @@ void loop()
     }
     move_servos(baseSpeed, alpha);
     TurningAverage[FilterIndex] = 1;           //update average for head direction
-  } else if (IR_left == HIGH && IR_right == HIGH && turnright < 6 && turnleft < 6) {    // if both detect a line (consider it as no line for now, different in lab2)
-    rechtdoor = 0;
-    StartTime = 0;
-    move_servos(0, 0);
-    delay(1000);
-    move_servos(baseSpeed, 0);
-    delay(500);
-    TurningAverage[FilterIndex] = 0;           //update average for head direction
-    // Intersection protocol
+  } else if (IR_left == HIGH && IR_right == HIGH && crossingsPassed == 0) {
+      rechtdoor = 0;
+      waitMode = true;
+      prevCross = 1;
+      move_servos(0, 0);
+      Serial.print(7);
+      trash = Serial.read();
+    }
+    else if (IR_left == HIGH && IR_right == HIGH && crossingsPassed > 0) {
+      // if both detect a line (consider it as no line for now)
+      rechtdoor = 0;
+      prevCross = 1;
+      move_servos(baseSpeed, 0);
+    }
+  }else if (waitMode == true) {
+    //Serial.println("IK WACHT");
+    if (Serial.available() > 0) {
+      incomingByte = Serial.read();
+      if (incomingByte == 54) {
+        waitMode = false;
+        move_servos(baseSpeed, 0);
+        delay(200);
+      }
+    }
   }
 
   FilterIndex = (FilterIndex + 1) % FilterLength; //cycle through filter
   servo_head.write(90 + Average(TurningAverage, FilterLength)*gamma); //turn head in turning direction
-
-  //    Serial.print("LEFT: ");
-  //    Serial.print(turnleft);
-  //    Serial.print(" RIGHT: ");
-  //    Serial.print(turnright);
-  //    Serial.println();
 }
