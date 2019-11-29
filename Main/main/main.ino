@@ -4,12 +4,15 @@
 #define TRIGGER_PIN  9
 #define ECHO_PIN     9
 #define MAX_DISTANCE 200
+#define MIN_DISTANCE 8
 
 Servo servo_left;
 Servo servo_right;
+NewPing sonar(TRIGGER_PIN, ECHO_PIN, SONAR_DISTANCE);
 
 const int pin_Servo_left = 13;
 const int pin_Servo_right = 12;
+
 
 const int pin_IR_left = A0;
 const int pin_IR_right = A1;
