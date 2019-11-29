@@ -147,10 +147,7 @@ void loop()
       }
       TurningAverage[FilterIndex] = 1;           //update average for head direction
     } else if (IR_left == HIGH && IR_right == HIGH) {
-<<<<<<< Updated upstream
-=======
       //If I am first robot wait 10 seconds at line. If I am not the first 'head' robot continue driving
->>>>>>> Stashed changes
       rechtdoor = 0;
       waitMode = true;
       prevCross = 1;
@@ -166,10 +163,6 @@ void loop()
       }
     }
   }
-<<<<<<< Updated upstream
-
-=======
->>>>>>> Stashed changes
   FilterIndex = (FilterIndex + 1) % FilterLength; //cycle through filter
   servo_head.write(90 + Average(TurningAverage, FilterLength)*gamma); //turn head in turning direction
 }
