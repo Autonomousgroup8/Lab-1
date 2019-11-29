@@ -167,8 +167,9 @@ void loop()
       rechtdoor = 0;
       if (turnleft > 10) {                         //on sharp corners turn faster
         move_servos(baseSpeed, -2 * alpha);
-      }
+      }else{
       move_servos(baseSpeed, -alpha);
+      }
       TurningAverage[FilterIndex] = -1;           //update average for head direction
 
     } else if (IR_left == LOW && IR_right == HIGH) {    // if line is detected by right side
@@ -176,8 +177,9 @@ void loop()
       rechtdoor = 0;
       if (turnright > 10) {                         //on sharp corners turn faster
         move_servos(baseSpeed, 2 * alpha);
-      }
+      }else{
       move_servos(baseSpeed, alpha);
+      }      
       TurningAverage[FilterIndex] = 1;           //update average for head direction
     } else if (IR_left == HIGH && IR_right == HIGH && crossingsPassed == 0) {
       rechtdoor = 0;
