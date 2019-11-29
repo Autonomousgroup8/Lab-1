@@ -26,7 +26,7 @@ int turnright = 0;
 int rechtdoor = 0;
 int trash = 0;
 int prevCross = 0;
-const float alpha = 0.05;
+const float alpha = 0.3;
 const float beta = 0.002;
 const float gamma = 10;
 unsigned long StartTime = 0;
@@ -120,31 +120,31 @@ void loop()
     IR_left = digitalRead(pin_IR_left);
     IR_right = digitalRead(pin_IR_right);
 
-    if (IR_right == LOW && turnright > 6) {     //sharp corner protocol right
-      turnright = 0;
-      move_servos(baseSpeed, 1);
-      delay(100);
-      while (IR_left == HIGH) {
-        move_servos(baseSpeed, 0);
-        IR_left = digitalRead(pin_IR_left);
-      }
-    }
-    if (IR_left == LOW && turnleft > 6) {     //sharp corner protocol right
-      turnleft = 0;
-      move_servos(baseSpeed, -alpha);
-      delay(100);
-      while (IR_right == HIGH) {
-        move_servos(baseSpeed, 0);
-        IR_right = digitalRead(pin_IR_right);
-      }
-    }
-
-    if (IR_right == LOW) {                    //reset consequetive right turns counter
-      turnright = 0;
-    }
-    if (IR_left == LOW) {                    //reset consequetive left turns counter
-      turnleft = 0;
-    }
+//    if (IR_right == LOW && turnright > 6) {     //sharp corner protocol right
+//      turnright = 0;
+//      move_servos(baseSpeed, 1);
+//      delay(100);
+//      while (IR_left == HIGH) {
+//        move_servos(baseSpeed, 0);
+//        IR_left = digitalRead(pin_IR_left);
+//      }
+//    }
+//    if (IR_left == LOW && turnleft > 6) {     //sharp corner protocol right
+//      turnleft = 0;
+//      move_servos(baseSpeed, -alpha);
+//      delay(100);
+//      while (IR_right == HIGH) {
+//        move_servos(baseSpeed, 0);
+//        IR_right = digitalRead(pin_IR_right);
+//      }
+//    }
+//
+//    if (IR_right == LOW) {                    //reset consequetive right turns counter
+//      turnright = 0;
+//    }
+//    if (IR_left == LOW) {                    //reset consequetive left turns counter
+//      turnleft = 0;
+//    }
 
     if (IR_left == LOW && IR_right == LOW) {      // If no line is detected
       move_servos(baseSpeed, 0);
