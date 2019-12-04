@@ -27,12 +27,9 @@ int rechtdoor = 0;
 int prevCross = 0;
 const float alpha = 0.3;
 const float beta = 0.002;
-const float gamma = 500;
 float baseSpeed = 0.05;
 float ACCSpeed = 0.05;
-const int FilterLength = 50;
-int TurningAverage[FilterLength];
-int FilterIndex = 0;
+int headTurn = 0;
 
 //Zigbee implementation
 #define SELF     43
@@ -44,15 +41,6 @@ int crossingsPassed = 0;
 // some macros needed for the xbee_init function. Do not touch :-).
 #define STRING(name) #name
 #define TOSTRING(x) STRING(x)
-
-float Average(int Array[], int length) {          //floating average over 10 cycles
-  int sum = 0;
-  for (int i = 0; i < length; i++) {              //sum all elements of Array
-    sum += Array[i];
-  }
-
-  return sum / length;                            //calculate average of Array
-}
 
 // the xbee_init function initializes the XBee Zigbee module
 void xbee_init(void) {
@@ -98,7 +86,7 @@ float ACC() {                                                   //active cruise 
   } else if (Distance < 50 && Distance > Ref_Distance + 5) {    // Larger than preffered distance, gradruately speed up
     return ACCSpeed + beta * (Distance - Ref_Distance);
   } else if (Distance < Ref_Distance - 3) {                     // too small, gradruatly slow down
-    return max(ACCSpeed - abs(3 * beta * (Distance - Ref_Distance)), 0);
+    return max(ACCSpeed - abs(3 * beta * (Distance - Ref_Distance))+0.01, 0.01) - 0.01;
   } else {                                                      // in the window, only make small adjustments.
     return ACCSpeed + 0.1 * beta * (Distance - Ref_Distance);
   }
@@ -108,7 +96,7 @@ void loop()
 {
   if (!waitMode) {
     baseSpeed = ACC();                          //determine speed with Active cruise control.
-    //Serial.print(baseSpeed);
+    Serial.println(baseSpeed);
 
     // Read from IR sensors
     IR_left = digitalRead(pin_IR_left);
@@ -121,12 +109,15 @@ void loop()
         prevCross = 0;
       }
 
-      if (rechtdoor > 20) {                       //increase speed on long straights
+      if (rechtdoor > 80) {                       //increase speed on long straights
         move_servos(2 * baseSpeed, 0);
+        if (baseSpeed > 0.03) {
+          headTurn = 0;
+        }
       } else {
         move_servos(baseSpeed, 0);
       }
-      TurningAverage[FilterIndex] = 0;           //update average for head direction
+      //update average for head direction
     } else if (IR_left == HIGH && IR_right == LOW) { // if line is detected by left side
       turnleft ++;
       rechtdoor = 0;
@@ -135,7 +126,11 @@ void loop()
       } else {
         move_servos(baseSpeed, -alpha);
       }
-      TurningAverage[FilterIndex] = -15;           //update average for head direction
+      if (turnleft > 3) {
+        headTurn = -45;
+      } else {
+        headTurn = -10;
+      }
 
     } else if (IR_left == LOW && IR_right == HIGH) {    // if line is detected by right side
       turnright ++;
@@ -145,7 +140,12 @@ void loop()
       } else {
         move_servos(baseSpeed, alpha);
       }
-      TurningAverage[FilterIndex] = 15;           //update average for head direction
+
+      if (turnright > 3) {
+        headTurn = 45;
+      } else {
+        headTurn = 10;
+      }
     } else if (IR_left == HIGH && IR_right == HIGH) {
       //If I am first robot wait 10 seconds at line. If I am not the first 'head' robot continue driving
       rechtdoor = 0;
@@ -163,6 +163,5 @@ void loop()
       }
     }
   }
-  FilterIndex = (FilterIndex + 1) % FilterLength; //cycle through filter
-  servo_head.write(90 + Average(TurningAverage, FilterLength)*gamma); //turn head in turning direction
+  servo_head.write(90 + headTurn); //turn head in turning direction
 }
