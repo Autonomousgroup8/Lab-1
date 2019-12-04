@@ -147,7 +147,7 @@ void loop()
 {
   if (!waitMode) {
     baseSpeed = ACC();                          //determine speed with Active cruise control.
-    Serial.println(baseSpeed);
+    //Serial.println(baseSpeed);
 
     // Read from IR sensors
     IR_left = digitalRead(pin_IR_left);
@@ -206,17 +206,28 @@ void loop()
       move_servos(baseSpeed, 0);
     }
   } else if (waitMode == true) {
+    move_servos(0, 0);
     communication = getMessage();
-    if (getMessage == 2) {
-      if (receivedChars == "Master") {
+    //    Serial.print("0");
+        Serial.print(communication);
+        
+        Serial.print(receivedChars);
+    if (communication == 2) {
+      //      Serial.print(0);
+      if (strcmp(receivedChars,"Master")==0) {
         Slave = true;
+        Serial.print("ikBenEenSlaaf");
       }
     } else {
       Serial.print("11Master");
     }
     //master determined
-    delay(5000);
+    if (!Slave) {
+      delay(5000);
+      move_servos(baseSpeed, 0);
+      delay(200);
+    }
     waitMode = false;
   }
-servo_head.write(90 + headTurn); //turn head in turning direction
+  servo_head.write(90 + headTurn); //turn head in turning direction
 }
