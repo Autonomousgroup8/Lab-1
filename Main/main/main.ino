@@ -25,19 +25,20 @@ int turnleft = 0;
 int turnright = 0;
 int rechtdoor = 0;
 int prevCross = 0;
+int communication = 0;
 const float alpha = 0.3;
 const float beta = 0.002;
 float baseSpeed = 0.05;
 float ACCSpeed = 0.05;
 int headTurn = 0;
+bool Slave = false;
 
 //Variables for communication
 int iter = 0;
 int receivedID = 0;
 char endMarker = '\n';
-const byte numChars = 32;
+const byte numChars = 8;
 char receivedChars[numChars];
-
 
 
 //Zigbee implementation
@@ -75,8 +76,6 @@ void move_servos(float baseSpeed, float offset) {
   servo_right.write(90 + speed_right * 90);
 }
 
-
-
 int getMessage() {
   //Enter messages using the format 'xIDMessage', where x is either 0 for debug or 1 for real message, ID is the ID of the sending robot and then the Message
   if (Serial.available() > 0) {               //A message is available
@@ -86,7 +85,6 @@ int getMessage() {
         while (Serial.read() >= 0) { }
         return 1;                       //return a 1 that indicates that it is a debug message
         break;
-
       case 49:                            //49 = ascii for 1, this message is relevant
         receivedID = Serial.read();
         for (int j = 0; j < numChars; j++) {
@@ -94,23 +92,19 @@ int getMessage() {
         }
         char tempChar;
         iter = -1;
-
         while (Serial.available() > 0) {
           tempChar = Serial.read();
           iter++;
           if (tempChar != endMarker && iter < numChars) {
             receivedChars[iter] = tempChar;
           }
-
           else {
             break;
           }
         }
-
         receivedChars[iter + 1] = '\0';
         return 2;                           //Return 2 because it is a relevant message.
         break;
-
       default:
         while (Serial.read() >= 0) { }
         return 404;                     //Return 404 in case of an error.
@@ -143,7 +137,7 @@ float ACC() {                                                   //active cruise 
   } else if (Distance < 50 && Distance > Ref_Distance + 5) {    // Larger than preffered distance, gradruately speed up
     return ACCSpeed + beta * (Distance - Ref_Distance);
   } else if (Distance < Ref_Distance - 3) {                     // too small, gradruatly slow down
-    return max(ACCSpeed - abs(3 * beta * (Distance - Ref_Distance))+0.01, 0.01) - 0.01;
+    return max(ACCSpeed - abs(3 * beta * (Distance - Ref_Distance)) + 0.01, 0.01) - 0.01;
   } else {                                                      // in the window, only make small adjustments.
     return ACCSpeed + 0.1 * beta * (Distance - Ref_Distance);
   }
@@ -197,7 +191,6 @@ void loop()
       } else {
         move_servos(baseSpeed, alpha);
       }
-
       if (turnright > 3) {
         headTurn = 45;
       } else {
@@ -206,19 +199,24 @@ void loop()
     } else if (IR_left == HIGH && IR_right == HIGH) {
       //If I am first robot wait 10 seconds at line. If I am not the first 'head' robot continue driving
       rechtdoor = 0;
-      //waitMode = true;
+      if (!Slave) {
+        waitMode = true;
+      }
       prevCross = 1;
       move_servos(baseSpeed, 0);
     }
   } else if (waitMode == true) {
-    if (Serial.available() > 0) {
-      incomingByte = Serial.read();
-      if (incomingByte == 55) {
-        waitMode = false;
-        move_servos(baseSpeed, 0);
-        delay(200);
+    communication = getMessage();
+    if (getMessage == 2) {
+      if (receivedChars == "Master") {
+        Slave = true;
       }
+    } else {
+      Serial.print("11Master");
     }
+    //master determined
+    delay(5000);
+    waitMode = false;
   }
-  servo_head.write(90 + headTurn); //turn head in turning direction
+servo_head.write(90 + headTurn); //turn head in turning direction
 }
