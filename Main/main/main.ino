@@ -27,10 +27,10 @@ int rechtdoor = 0;
 int prevCross = 0;
 const float alpha = 0.3;
 const float beta = 0.002;
-const float gamma = 50;
+const float gamma = 500;
 float baseSpeed = 0.05;
 float ACCSpeed = 0.05;
-const int FilterLength = 10;
+const int FilterLength = 50;
 int TurningAverage[FilterLength];
 int FilterIndex = 0;
 
@@ -135,7 +135,7 @@ void loop()
       } else {
         move_servos(baseSpeed, -alpha);
       }
-      TurningAverage[FilterIndex] = -1;           //update average for head direction
+      TurningAverage[FilterIndex] = -15;           //update average for head direction
 
     } else if (IR_left == LOW && IR_right == HIGH) {    // if line is detected by right side
       turnright ++;
@@ -145,13 +145,13 @@ void loop()
       } else {
         move_servos(baseSpeed, alpha);
       }
-      TurningAverage[FilterIndex] = 1;           //update average for head direction
+      TurningAverage[FilterIndex] = 15;           //update average for head direction
     } else if (IR_left == HIGH && IR_right == HIGH) {
       //If I am first robot wait 10 seconds at line. If I am not the first 'head' robot continue driving
       rechtdoor = 0;
-      waitMode = true;
+      //waitMode = true;
       prevCross = 1;
-      move_servos(0, 0);
+      move_servos(baseSpeed, 0);
     }
   } else if (waitMode == true) {
     if (Serial.available() > 0) {
