@@ -34,6 +34,15 @@ const int FilterLength = 50;
 int TurningAverage[FilterLength];
 int FilterIndex = 0;
 
+//Variables for communication
+int iter = 0;
+int receivedID = 0;
+char endMarker = '\n';
+const byte numChars = 32;
+char receivedChars[numChars];
+
+
+
 //Zigbee implementation
 #define SELF     43
 #define PAN_ID           "A008"
@@ -77,6 +86,54 @@ void move_servos(float baseSpeed, float offset) {
   servo_left.write(90 + speed_left * 90);
   servo_right.write(90 + speed_right * 90);
 }
+
+
+
+int getMessage() {
+  //Enter messages using the format 'xIDMessage', where x is either 0 for debug or 1 for real message, ID is the ID of the sending robot and then the Message
+  if (Serial.available() > 0) {               //A message is available
+    int startBit = Serial.read();
+    switch (startBit) {
+      case 48 :                           //48 = ascii for 0, debug message
+        while (Serial.read() >= 0) { }
+        return 1;                       //return a 1 that indicates that it is a debug message
+        break;
+
+      case 49:                            //49 = ascii for 1, this message is relevant
+        receivedID = Serial.read();
+        for (int j = 0; j < numChars; j++) {
+          receivedChars[j] = ' ';
+        }
+        char tempChar;
+        iter = -1;
+
+        while (Serial.available() > 0) {
+          tempChar = Serial.read();
+          iter++;
+          if (tempChar != endMarker && iter < numChars) {
+            receivedChars[iter] = tempChar;
+          }
+
+          else {
+            break;
+          }
+        }
+
+        receivedChars[iter + 1] = '\0';
+        return 2;                           //Return 2 because it is a relevant message.
+        break;
+
+      default:
+        while (Serial.read() >= 0) { }
+        return 404;                     //Return 404 in case of an error.
+        break;
+    }
+  }
+  else {
+    return 0; // No message was available
+  }
+}
+
 
 void setup()
 {
