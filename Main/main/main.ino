@@ -149,13 +149,12 @@ void loop()
 {
   if (!waitMode) {
     baseSpeed = ACC();                          //determine speed with Active cruise control.
-    //Serial.println(baseSpeed);
-    if (Slave==2 && crossingsPassed == 2) {
-      baseSpeed = 2*baseSpeed;
-    }
-    if (Slave==2 && crossingsPassed == 3) {
-      baseSpeed = 0.5*baseSpeed + 0.01;
-    }
+    //    if (Slave==2 && crossingsPassed == 2) {
+    //      baseSpeed = 2*baseSpeed;
+    //    }
+    //    if (Slave==2 && crossingsPassed == 3) {
+    //      baseSpeed = 0.5*baseSpeed + 0.01;
+    //    }
 
     // Read from IR sensors
     IR_left = digitalRead(pin_IR_left);
@@ -169,7 +168,8 @@ void loop()
       }
 
       if (rechtdoor > 80) {                       //increase speed on long straights
-        //move_servos(2 * baseSpeed, 0);
+
+        move_servos(baseSpeed, 0);
         if (baseSpeed > 0.03) {
           headTurn = 0;
         }
@@ -214,23 +214,23 @@ void loop()
       prevCross = 1;
       move_servos(baseSpeed, 0);
     }
-  }if (waitMode == true) {
+  } if (waitMode == true) {
     move_servos(0, 0);
     serial = Serial.available();
-//    Serial.print("SerialBytes: ");
-//    Serial.print(serial);
-//    Serial.println("");
+    //    Serial.print("SerialBytes: ");
+    //    Serial.print(serial);
+    //    Serial.println("");
     if (serial > 0) {
-      while(serial>1){
+      while (serial > 1) {
         Serial.read();
         serial = Serial.available();
       }
       incomingByte = Serial.read();
-//      Serial.print("Incoming: ");
-//      Serial.print(incomingByte);
-//      Serial.println("");
+      //      Serial.print("Incoming: ");
+      //      Serial.print(incomingByte);
+      //      Serial.println("");
       if (incomingByte == 54 && Slave == 0) {
-//        Serial.print("SLAAF=TRUE");
+        //        Serial.print("SLAAF=TRUE");
         Slave = 1;
         move_servos(baseSpeed, 0);
       }
