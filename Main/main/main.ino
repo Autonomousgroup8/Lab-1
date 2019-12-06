@@ -101,7 +101,7 @@ int getMessage() {
           else {
             break;
           }
-        }
+        } 
         receivedChars[iter + 1] = '\0';
         return 2;                           //Return 2 because it is a relevant message.
         break;
