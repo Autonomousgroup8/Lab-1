@@ -18,6 +18,7 @@ const int pin_Servo_head = 11;
 const int pin_IR_left = A0;
 const int pin_IR_right = A1;
 
+int serial = 0;
 int incomingByte = 0;
 int IR_left = 0;
 int IR_right = 0;
@@ -31,7 +32,8 @@ const float beta = 0.002;
 float baseSpeed = 0.05;
 float ACCSpeed = 0.05;
 int headTurn = 0;
-bool Slave = false;
+int Slave = 0;
+int trash = 0;
 
 //Variables for communication
 int iter = 0;
@@ -101,7 +103,7 @@ int getMessage() {
           else {
             break;
           }
-        } 
+        }
         receivedChars[iter + 1] = '\0';
         return 2;                           //Return 2 because it is a relevant message.
         break;
@@ -148,6 +150,12 @@ void loop()
   if (!waitMode) {
     baseSpeed = ACC();                          //determine speed with Active cruise control.
     //Serial.println(baseSpeed);
+    if (Slave==2 && crossingsPassed == 2) {
+      baseSpeed = 2*baseSpeed;
+    }
+    if (Slave==2 && crossingsPassed == 3) {
+      baseSpeed = 0.5*baseSpeed + 0.01;
+    }
 
     // Read from IR sensors
     IR_left = digitalRead(pin_IR_left);
@@ -161,7 +169,7 @@ void loop()
       }
 
       if (rechtdoor > 80) {                       //increase speed on long straights
-        move_servos(2 * baseSpeed, 0);
+        //move_servos(2 * baseSpeed, 0);
         if (baseSpeed > 0.03) {
           headTurn = 0;
         }
@@ -199,31 +207,38 @@ void loop()
     } else if (IR_left == HIGH && IR_right == HIGH) {
       //If I am first robot wait 10 seconds at line. If I am not the first 'head' robot continue driving
       rechtdoor = 0;
-      if (!Slave) {
+      if (Slave == 0 || Slave == 2) {
+        Serial.print("6");
         waitMode = true;
       }
       prevCross = 1;
       move_servos(baseSpeed, 0);
     }
-  } else if (waitMode == true) {
+  }if (waitMode == true) {
     move_servos(0, 0);
-    communication = getMessage();
-    //    Serial.print("0");
-        Serial.print(communication);
-        
-        Serial.print(receivedChars);
-    if (communication == 2) {
-      //      Serial.print(0);
-      if (strcmp(receivedChars,"Master")==0) {
-        Slave = true;
-        Serial.print("ikBenEenSlaaf");
+    serial = Serial.available();
+//    Serial.print("SerialBytes: ");
+//    Serial.print(serial);
+//    Serial.println("");
+    if (serial > 0) {
+      while(serial>1){
+        Serial.read();
+        serial = Serial.available();
       }
-    } else {
-      Serial.print("11Master");
+      incomingByte = Serial.read();
+//      Serial.print("Incoming: ");
+//      Serial.print(incomingByte);
+//      Serial.println("");
+      if (incomingByte == 54 && Slave == 0) {
+//        Serial.print("SLAAF=TRUE");
+        Slave = 1;
+        move_servos(baseSpeed, 0);
+      }
     }
     //master determined
-    if (!Slave) {
-      delay(5000);
+    if (Slave == 0 || Slave == 2) {
+      Slave = 2;
+      delay(10000);
       move_servos(baseSpeed, 0);
       delay(200);
     }
