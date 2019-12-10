@@ -149,12 +149,6 @@ void loop()
 {
   if (!waitMode) {
     baseSpeed = ACC();                          //determine speed with Active cruise control.
-    //    if (Slave==2 && crossingsPassed == 2) {
-    //      baseSpeed = 2*baseSpeed;
-    //    }
-    //    if (Slave==2 && crossingsPassed == 3) {
-    //      baseSpeed = 0.5*baseSpeed + 0.01;
-    //    }
 
     // Read from IR sensors
     IR_left = digitalRead(pin_IR_left);
