@@ -147,96 +147,56 @@ float ACC() {                                                   //active cruise 
 
 void loop()
 {
-  if (!waitMode) {
-    baseSpeed = ACC();                          //determine speed with Active cruise control.
+  communication = getmessage();
+  if (communication == 1) {
+    //Debug message, do nothing
+  }
+  if (communication == 2) {
+    //Relevant message, listen
+    //Save received chars in new string
 
-    // Read from IR sensors
-    IR_left = digitalRead(pin_IR_left);
-    IR_right = digitalRead(pin_IR_right);
-
-    if (IR_left == LOW && IR_right == LOW) {      // If no line is detected
-      rechtdoor++;
-      if (prevCross == 1) {
-        crossingsPassed++;
-        prevCross = 0;
-      }
-
-      if (rechtdoor > 80) {                       //increase speed on long straights
-
-        move_servos(baseSpeed, 0);
-        if (baseSpeed > 0.03) {
-          headTurn = 0;
-        }
-      } else {
-        move_servos(baseSpeed, 0);
-      }
-      //update average for head direction
-    } else if (IR_left == HIGH && IR_right == LOW) { // if line is detected by left side
-      turnleft ++;
-      rechtdoor = 0;
-      if (turnleft > 10) {                         //on sharp corners turn faster
-        move_servos(baseSpeed, -2 * alpha);
-      } else {
-        move_servos(baseSpeed, -alpha);
-      }
-      if (turnleft > 3) {
-        headTurn = -45;
-      } else {
-        headTurn = -10;
-      }
-
-    } else if (IR_left == LOW && IR_right == HIGH) {    // if line is detected by right side
-      turnright ++;
-      rechtdoor = 0;
-      if (turnright > 10) {                         //on sharp corners turn faster
-        move_servos(baseSpeed, 2 * alpha);
-      } else {
-        move_servos(baseSpeed, alpha);
-      }
-      if (turnright > 3) {
-        headTurn = 45;
-      } else {
-        headTurn = 10;
-      }
-    } else if (IR_left == HIGH && IR_right == HIGH) {
-      //If I am first robot wait 10 seconds at line. If I am not the first 'head' robot continue driving
-      rechtdoor = 0;
-      if (Slave == 0 || Slave == 2) {
-        Serial.print("6");
-        waitMode = true;
-      }
-      prevCross = 1;
-      move_servos(baseSpeed, 0);
+    if (DriveStraight) {
+      driveStraight();
+    } else if (rightCorner) {
+      rightCorner();
+    } else if (leftCorner) {
+      leftCorner();
+    } else {
+      standStill();
     }
-  } if (waitMode == true) {
+  }
+
+  baseSpeed = ACC();                          //determine speed with Active cruise control.
+
+  // Read from IR sensors
+  IR_left = digitalRead(pin_IR_left);
+  IR_right = digitalRead(pin_IR_right);
+
+  if (IR_left == LOW && IR_right == LOW) {      // If no line is detected
+    rechtdoor++;
+    move_servos(baseSpeed, 0);
+    if (baseSpeed > 0.03) {
+      headTurn = 0;
+    }
+  }else if (IR_left == HIGH && IR_right == LOW) { // if line is detected by left side
+    turnleft ++;
+    rechtdoor = 0;
+    if (turnleft > 3) {
+      headTurn = -45;
+    } else {
+      headTurn = -10;
+    }
+  } else if (IR_left == LOW && IR_right == HIGH) {    // if line is detected by right side
+    turnright ++;
+    rechtdoor = 0;
+    if (turnright > 3) {
+      headTurn = 45;
+    } else {
+      headTurn = 10;
+    }
+  } else if (IR_left == HIGH && IR_right == HIGH) { // 2 lines detected at same time
+    rechtdoor = 0;
     move_servos(0, 0);
-    serial = Serial.available();
-    //    Serial.print("SerialBytes: ");
-    //    Serial.print(serial);
-    //    Serial.println("");
-    if (serial > 0) {
-      while (serial > 1) {
-        Serial.read();
-        serial = Serial.available();
-      }
-      incomingByte = Serial.read();
-      //      Serial.print("Incoming: ");
-      //      Serial.print(incomingByte);
-      //      Serial.println("");
-      if (incomingByte == 54 && Slave == 0) {
-        //        Serial.print("SLAAF=TRUE");
-        Slave = 1;
-        move_servos(baseSpeed, 0);
-      }
-    }
-    //master determined
-    if (Slave == 0 || Slave == 2) {
-      Slave = 2;
-      delay(10000);
-      move_servos(baseSpeed, 0);
-      delay(200);
-    }
-    waitMode = false;
   }
   servo_head.write(90 + headTurn); //turn head in turning direction
 }
