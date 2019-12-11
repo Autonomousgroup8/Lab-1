@@ -51,8 +51,7 @@ char endMarker = '\n';
 const byte numChars = 8;
 char receivedChars[numChars];
 char Direction; //Forward, left, right
-char Afstand; //Distance in number of blocks of grid
-
+int Distance; //Distance in number of blocks of grid
 
 
 
@@ -118,6 +117,9 @@ int getMessage() {
           }
         }
         receivedChars[iter + 1] = '\0';
+        for(int k =0; k<iter+1; k++){
+          Serial.print(receivedChars[k]);
+          }
         return 2;                           //Return 2 because it is a relevant message.
         break;
       default:
@@ -165,22 +167,23 @@ void loop()
     //Debug message, do nothing
   }
   if (communication == 2) {
-    Serial.print("0Message Received");
     //Relevant message, listen
+    //Save received chars in new string
+//    Serial.print("0Message Received");
     leftCount = 0;
     rightCount = 0;
-    //Direction = receivedChars[0];
-    //    Serial.print(Direction);
-    for (int i = 0; i < numChars; i++) {
-
-      Afstand = receivedChars[i];
-      //      Distance = Distance * (10 * pow(2, (i - 1))) + int(receivedChars[i]);
-      Serial.print(Afstand);
+    Direction = receivedChars[0];
+    Serial.print(Direction);
+    for (int i = 1; i < numChars; i++) {
+      Distance = receivedChars[1]-48;
     }
-
+    Serial.print(Distance);
+    
+//    Serial.print(Distance);
+    
     if (Direction == 'F') {
       //while distance is smaller then target
-      if ((leftCount + rightCount) < (Afstand * 2)) {
+      if ((leftCount + rightCount) < (Distance * 2)) {
         move_servos(baseSpeed, 0);
         left_wheel = digitalRead(pin_left_wheel);
         right_wheel = digitalRead(pin_right_wheel);
@@ -196,20 +199,17 @@ void loop()
         } else if (right_wheel == LOW) {
           rightWait = 0;
         }
-      } else {
-        Direction = ' ';
-        Serial.print("0Reset");
       }
     } else if (Direction == 'T') {
       //while sin(angle) is smaller then abs(desired)
       move_servos(0, 1);
 
-    } else if (Direction == ' ') {
-      move_servos(0, 0);
+    } else {
+//      standStill();
     }
   }
 
-  //  baseSpeed = ACC();                          //determine speed with Active cruise control.
+//  baseSpeed = ACC();                          //determine speed with Active cruise control.
 
   // Read from IR sensors
   IR_left = digitalRead(pin_IR_left);
@@ -217,7 +217,7 @@ void loop()
 
   if (IR_left == LOW && IR_right == LOW) {      // If no line is detected
     rechtdoor++;
-    //    move_servos(baseSpeed, 0);
+//    move_servos(baseSpeed, 0);
     if (baseSpeed > 0.03) {
       headTurn = 0;
     }
@@ -229,7 +229,7 @@ void loop()
     } else {
       headTurn = -10;
     }
-    //    move_servos(baseSpeed, 1);
+//    move_servos(baseSpeed, 1);
   } else if (IR_left == LOW && IR_right == HIGH) {    // if line is detected by right side
     turnright ++;
     rechtdoor = 0;
@@ -238,10 +238,11 @@ void loop()
     } else {
       headTurn = 10;
     }
-    //    move_servos(baseSpeed, -1);
+//    move_servos(baseSpeed, -1);
   } else if (IR_left == HIGH && IR_right == HIGH) { // 2 lines detected at same time
     rechtdoor = 0;
     move_servos(0, 0);
   }
   servo_head.write(90 + headTurn); //turn head in turning direction
+  delay(100);
 }
