@@ -195,8 +195,6 @@ void loop()
     } else {
       headTurn = -10;
     }
-<<<<<<< Updated upstream
-=======
      move_servos(baseSpeed, 1);
   } else if (IR_left == LOW && IR_right == HIGH) {    // if line is detected by right side
     turnright ++;
@@ -206,10 +204,7 @@ void loop()
     } else {
       headTurn = 10;
     }
-<<<<<<< Updated upstream
-=======
      move_servos(baseSpeed, -1);
->>>>>>> Stashed changes
   } else if (IR_left == HIGH && IR_right == HIGH) { // 2 lines detected at same time
     rechtdoor = 0;
     move_servos(0, 0);
