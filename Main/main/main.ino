@@ -11,12 +11,21 @@ Servo servo_left;
 Servo servo_right;
 Servo servo_head;
 
+const int pin_left_wheel = 8;
+const int pin_right_wheel = 7;
 const int pin_Servo_left = 13;
 const int pin_Servo_right = 12;
 const int pin_Servo_head = 11;
 
 const int pin_IR_left = A0;
 const int pin_IR_right = A1;
+
+int left_wheel = 0;
+int right_wheel = 0;
+int leftcount = 0;
+int rightcount = 0;
+int leftWait = 0;
+int rightWait = 0;
 
 int serial = 0;
 int incomingByte = 0;
@@ -157,6 +166,8 @@ void loop()
   if (communication == 2) {
     //Relevant message, listen
     //Save received chars in new string
+    leftCount = 0;
+    rightCount = 0;
     Direction = receivedChars[1];
     for (int i = 3; i < numChars; i++) {
       Distance = Distance * (10 * pow(2, i - 3)) + receivedChars[i];
@@ -164,12 +175,27 @@ void loop()
 
     if (Direction == 'F') {
       //while distance is smaller then target
-      move_servos(baseSpeed, 0);
-
+      if ((leftCount + rightCount) < (Distance * 2)) {
+        move_servos(baseSpeed, 0);
+        left_wheel = digitalRead(pin_left_wheel);
+        right_wheel = digitalRead(pin_right_wheel);
+        if (leftWait == 0 && left_wheel == HIGH) {
+          leftcount++;
+          leftWait = 1;
+        } else if (left_wheel == LOW) {
+          leftWait = 0;
+        }
+        if (rightWait == 0 && right_wheel == HIGH) {
+          rightcount++;
+          rightWait = 1;
+        } else if (right_wheel == LOW) {
+          rightWait = 0;
+        }
+      }
     } else if (Direction == 'T') {
       //while sin(angle) is smaller then abs(desired)
-      move_servos(0,1);
-      
+      move_servos(0, 1);
+
     } else {
       standStill();
     }
@@ -195,7 +221,7 @@ void loop()
     } else {
       headTurn = -10;
     }
-     move_servos(baseSpeed, 1);
+    move_servos(baseSpeed, 1);
   } else if (IR_left == LOW && IR_right == HIGH) {    // if line is detected by right side
     turnright ++;
     rechtdoor = 0;
@@ -204,7 +230,7 @@ void loop()
     } else {
       headTurn = 10;
     }
-     move_servos(baseSpeed, -1);
+    move_servos(baseSpeed, -1);
   } else if (IR_left == HIGH && IR_right == HIGH) { // 2 lines detected at same time
     rechtdoor = 0;
     move_servos(0, 0);
