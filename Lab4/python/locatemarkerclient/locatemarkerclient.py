@@ -18,8 +18,8 @@ MARKER_TIMEOUT = 10
 # Create a marker collection and register known markers with their numbers.
 # Set Marker to other for testing
 MARKERS = MarkerCollection()
-MARKERS.add_marker('origin', 1)
-MARKERS.add_marker('robotA', 4)
+MARKERS.add_marker('origin', 2)
+MARKERS.add_marker('robotA', 5)
 
 
 # connect to the locatemarkers program tcp server
@@ -45,6 +45,24 @@ DATA = b""
 MAIN_GRID = np.zeros([150, 150])
 MAIN_GRID[0][0] = 1
 # loop forever
+
+
+def add_to_grid(rel, grid, name=0):
+    x_v = rel[0]
+    x_y = rel[1]
+    grid[int(abs(round(x_v)))][int(abs(round(y_v)))] = name
+
+
+def check_markers(coll_a=MARKERS, name='robotA'):
+    origin = coll_a.get_marker('origin')
+    if (not origin is None):
+        rob = coll_a.get_marker(name)
+        if(not rob is None):
+            rel = name.relative_position(origin)
+            return rel
+        return 0
+
+
 while True:
 
     # read new data (if any) from the TCP connection
@@ -83,25 +101,9 @@ while True:
         DATA = ""
 
     # use the results to get the position and orientation of one marker (robot) relative to another marker (origin)
-
-
-
-    # find markers
-    ORIGIN = MARKERS.get_marker('origin')
-    ROBOT_A = MARKERS.get_marker('robotA')
-    if (not ORIGIN is None) and (not ROBOT_A is None):
-        rA = ROBOT_A.relative_position(ORIGIN)
-        print(rA)
-        x = int(abs(round(rA[0])))
-        print(x)
-        y = int(abs(round(rA[1])))
-        print(y)
-        MAIN_GRID[x][y] = 2
-        print(MAIN_GRID)
-        plt.imshow(MAIN_GRID)
-        plt.show()
-        sleep(5)
-
+    tempPos = check_markers(MARKERS, 'robotA')
+    add_to_grid(tempPos, MAIN_GRID, 1)
+    sleep(5)
     # if both are present
     # if (not ORIGIN is None) and (not ROBOT is None):
     # compute and print the relative position
