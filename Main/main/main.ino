@@ -41,6 +41,9 @@ int receivedID = 0;
 char endMarker = '\n';
 const byte numChars = 8;
 char receivedChars[numChars];
+char Direction; //Forward, left, right
+int Distance; //Distance in number of blocks of grid
+
 
 
 //Zigbee implementation
@@ -147,20 +150,26 @@ float ACC() {                                                   //active cruise 
 
 void loop()
 {
-  communication = getmessage();
+  communication = getMessage();
   if (communication == 1) {
     //Debug message, do nothing
   }
   if (communication == 2) {
     //Relevant message, listen
     //Save received chars in new string
+    Direction = receivedChars[1];
+    for (int i = 3; i < numChars; i++) {
+      Distance = Distance * (10 * pow(2, i - 3)) + receivedChars[i];
+    }
 
-    if (DriveStraight) {
-      driveStraight();
-    } else if (rightCorner) {
-      rightCorner();
-    } else if (leftCorner) {
-      leftCorner();
+    if (Direction == 'F') {
+      //while distance is smaller then target
+      move_servos(baseSpeed, 0);
+
+    } else if (Direction == 'T') {
+      //while sin(angle) is smaller then abs(desired)
+      move_servos(0,1);
+      
     } else {
       standStill();
     }
@@ -178,7 +187,7 @@ void loop()
     if (baseSpeed > 0.03) {
       headTurn = 0;
     }
-  }else if (IR_left == HIGH && IR_right == LOW) { // if line is detected by left side
+  } else if (IR_left == HIGH && IR_right == LOW) { // if line is detected by left side
     turnleft ++;
     rechtdoor = 0;
     if (turnleft > 3) {
