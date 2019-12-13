@@ -3,6 +3,7 @@
 
 import socket
 import re
+import math as math
 import numpy as np
 from time import sleep
 from operator import add
@@ -12,6 +13,7 @@ from numpy.linalg import norm
 from marker import Marker, MarkerCollection, MARKER_REGEX
 from zigbee import Zigbee
 from pathfinding import PathFinding
+#from pathfinding import PathFinding
 
 # forget markers after not seeing them for 10 seconds
 MARKER_TIMEOUT = 10
@@ -19,8 +21,15 @@ MARKER_TIMEOUT = 10
 # Create a marker collection and register known markers with their numbers.
 # Set Marker to other for testing
 MARKERS = MarkerCollection()
-MARKERS.add_marker('origin', 2)
+MARKERS.add_marker('origin', 0)
+MARKERS.add_marker('goal', 1)
+MARKERS.add_marker('obst1', 2)
+MARKERS.add_marker('obst2', 3)
+MARKERS.add_marker('obst3', 4)
 MARKERS.add_marker('robotA', 5)
+MARKERS.add_marker('robotB', 6)
+MARKERS.add_marker('robotC', 7)
+
 
 
 # connect to the locatemarkers program tcp server
@@ -43,7 +52,7 @@ ZIGBEE = Zigbee('COM10', 9600)
 # DATA holds the unprocessed data from the connection. Its length will be limited to BUFFER_SIZE
 BUFFER_SIZE = 1024
 DATA = b""
-MAIN_GRID = np.zeros([150, 150])
+MAIN_GRID = np.zeros([5, 5])
 MAIN_GRID[0][0] = 1
 # loop forever
 
@@ -94,7 +103,7 @@ while True:
         MARKER_RE_MATCH = re.search(MARKER_REGEX, DATA)
 
         # send something arbitrary to the Zigbee dongle. This has no real function except to demonstrate how to send something.
-        ZIGBEE.write(b'Hello')
+        # ZIGBEE.write(b'Hello')
 
 
     if len(DATA) > BUFFER_SIZE:
@@ -102,10 +111,30 @@ while True:
         DATA = ""
 
     # use the results to get the position and orientation of one marker (robot) relative to another marker (origin)
-    tempPos = check_markers(MARKERS, 'robotA')
-    add_to_grid(tempPos, MAIN_GRID, 1)
-    sleep(5)
-    # if both are present
+    # tempPos = check_markers(MARKERS, 'robotA')
+    # add_to_grid(tempPos, MAIN_GRID, 1)
+    # sleep(5)
+    ORIGIN = MARKERS.get_marker('origin')
+    GOAL = MARKERS.get_marker('goal')
+
+    # if (not GOAL is None and not ORIGIN is None):
+    #    print(GOAL.relative_position(ORIGIN))
+    MAIN_GRID = np.zeros([5,5])
+    if (not ORIGIN is None and not GOAL is None):
+        MAIN_GRID[0][0] = 10
+        # MAIN_GRID[2][3] = 1
+        for test in MARKERS.markerindex:
+            TEMP = MARKERS.get_marker(test)
+            if (test != 'origin' and not TEMP is None):
+                rel = TEMP.relative_position(ORIGIN)
+                x = int(abs(math.floor(rel[0]/40)))
+                y = int(abs(math.floor(rel[1]/40)))
+                MAIN_GRID[x][y] = TEMP.number
+        PathFinding(MAIN_GRID)
+    sleep(2)
+    # pathfind(MAIN_GRID)
+    print(MAIN_GRID)
+# if both are present
     # if (not ORIGIN is None) and (not ROBOT is None):
     # compute and print the relative position
     # print('Position: ({0:.2f}, {1:.2f}, {2:.2f})'.format(P[0], P[1], P[2]))
