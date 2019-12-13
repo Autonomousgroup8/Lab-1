@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 from numpy.linalg import norm
 from marker import Marker, MarkerCollection, MARKER_REGEX
 from zigbee import Zigbee
+from pathfinding import PathFinding
 
 # forget markers after not seeing them for 10 seconds
 MARKER_TIMEOUT = 10
