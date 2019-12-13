@@ -62,7 +62,7 @@ int driveTime;
 //Zigbee implementation
 #define SELF     0 //set to 0,1 or 2, different per robot
 #define PAN_ID           "A008"
-#define CHANNEL_ID       "0G"
+#define CHANNEL_ID       "0D"
 bool waitMode = false;
 int crossingsPassed = 0;
 
