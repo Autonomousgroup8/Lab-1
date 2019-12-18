@@ -35,7 +35,6 @@ char receivedChars[numChars];
 #define SELF     43
 #define PAN_ID           "A008"
 #define CHANNEL_ID       "0F"
-bool waitMode = false;
 
 // some macros needed for the xbee_init function. Do not touch :-).
 #define STRING(name) #name
@@ -65,8 +64,6 @@ void move_servos(float baseSpeed, float offset) {
   servo_right.write(90 + speed_right * 90);
 }
 
-
-
 int getMessage() {
   //Enter messages using the format 'xIDMessage', where x is either 0 for debug or 1 for real message, ID is the ID of the sending robot and then the Message
   if (Serial.available() > 0) {               //A message is available
@@ -91,12 +88,10 @@ int getMessage() {
           if (tempChar != endMarker && iter < numChars) {
             receivedChars[iter] = tempChar;
           }
-
           else {
             break;
           }
         }
-
         receivedChars[iter + 1] = '\0';
         return 2;                           //Return 2 because it is a relevant message.
         break;
@@ -127,13 +122,12 @@ void setup()
 
 float ACC() {                                                   //active cruise control algorithm, determines speed
   int Distance = sonar.ping_cm();
-  //  Serial.println(Distance);
   if (Distance > 49 || Distance == 0) {                         // Nothing in front, you are the leader
     return ACCSpeed;
   } else if (Distance < 50 && Distance > Ref_Distance + 5) {    // Larger than preffered distance, gradruately speed up
     return ACCSpeed + beta * (Distance - Ref_Distance);
   } else if (Distance < Ref_Distance - 3) {                     // too small, gradruatly slow down
-    return max(ACCSpeed - abs(3 * beta * (Distance - Ref_Distance))+0.01, 0.01) - 0.01;
+    return max(ACCSpeed - abs(3 * beta * (Distance - Ref_Distance)) + 0.01, 0.01) - 0.01;
   } else {                                                      // in the window, only make small adjustments.
     return ACCSpeed + 0.1 * beta * (Distance - Ref_Distance);
   }
@@ -143,42 +137,14 @@ void loop()
 {
   if (!waitMode) {
     baseSpeed = ACC();                          //determine speed with Active cruise control.
-    Serial.println(baseSpeed);
 
-    // Read from IR sensors
-    IR_left = digitalRead(pin_IR_left);
+    IR_left = digitalRead(pin_IR_left);         // Read from IR sensors
     IR_right = digitalRead(pin_IR_right);
 
     if (IR_left == LOW && IR_right == LOW) {      // If no line is detected
-      rechtdoor++;
-      if (prevCross == 1) {
-        crossingsPassed++;
-        prevCross = 0;
-      }
-
-      if (rechtdoor > 80) {                       //increase speed on long straights
-        move_servos(2 * baseSpeed, 0);
-        if (baseSpeed > 0.03) {
-          headTurn = 0;
-        }
-      } else {
-        move_servos(baseSpeed, 0);
-      }
-      //update average for head direction
+      move_servos(baseSpeed, 0);
     } else if (IR_left == HIGH && IR_right == LOW) { // if line is detected by left side
-      turnleft ++;
-      rechtdoor = 0;
-      if (turnleft > 10) {                         //on sharp corners turn faster
-        move_servos(baseSpeed, -2 * alpha);
-      } else {
-        move_servos(baseSpeed, -alpha);
-      }
-      if (turnleft > 3) {
-        headTurn = -45;
-      } else {
-        headTurn = -10;
-      }
-
+      move_servos(baseSpeed, -alpha);
     } else if (IR_left == LOW && IR_right == HIGH) {    // if line is detected by right side
       turnright ++;
       rechtdoor = 0;
