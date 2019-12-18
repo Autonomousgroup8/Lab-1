@@ -107,6 +107,15 @@ int getMessage() {
   }
 }
 
+int determineDuration(char DurationChar) {
+  if (DurationChar == 0) {
+    return 0;
+  }
+  else {
+    driveTime = (DurationChar - '0') * 500;
+    return driveTime;
+  }
+}
 
 void setup()
 {
@@ -135,46 +144,51 @@ float ACC() {                                                   //active cruise 
 
 void loop()
 {
-  if (!waitMode) {
-    baseSpeed = ACC();                          //determine speed with Active cruise control.
-
-    IR_left = digitalRead(pin_IR_left);         // Read from IR sensors
-    IR_right = digitalRead(pin_IR_right);
-
-    if (IR_left == LOW && IR_right == LOW) {      // If no line is detected
-      move_servos(baseSpeed, 0);
-    } else if (IR_left == HIGH && IR_right == LOW) { // if line is detected by left side
-      move_servos(baseSpeed, -alpha);
-    } else if (IR_left == LOW && IR_right == HIGH) {    // if line is detected by right side
-      turnright ++;
-      rechtdoor = 0;
-      if (turnright > 10) {                         //on sharp corners turn faster
-        move_servos(baseSpeed, 2 * alpha);
-      } else {
-        move_servos(baseSpeed, alpha);
-      }
-
-      if (turnright > 3) {
-        headTurn = 45;
-      } else {
-        headTurn = 10;
-      }
-    } else if (IR_left == HIGH && IR_right == HIGH) {
-      //If I am first robot wait 10 seconds at line. If I am not the first 'head' robot continue driving
-      rechtdoor = 0;
-      //waitMode = true;
-      prevCross = 1;
-      move_servos(baseSpeed, 0);
-    }
-  } else if (waitMode == true) {
-    if (Serial.available() > 0) {
-      incomingByte = Serial.read();
-      if (incomingByte == 55) {
-        waitMode = false;
-        move_servos(baseSpeed, 0);
-        delay(200);
-      }
+  communication = getMessage();
+  curTime = millis();
+  if (communication == 2) {
+    //Relevant message, listen, Save received chars in new string
+    ID = receivedChars[1];
+    if (SELF == ID) {   //check if message is for you
+      Direction = receivedChars[2];
+      DurationChar = receivedChars[3];
+      Duration = determineDuration(DurationChar);
+      startTime = curTime;
+      commandExcecuted = false;
     }
   }
-  servo_head.write(90 + headTurn); //turn head in turning direction
+  passedTime = curTime - startTime;
+
+  if (passedTime < Duration && commandExcecuted != true) {
+    switch (Direction) {
+      case 'F':
+        move_servos(baseSpeed, 0);
+        baseSpeed = ACC();                          //determine speed with Active cruise control.
+
+        IR_left = digitalRead(pin_IR_left);         // Read from IR sensors
+        IR_right = digitalRead(pin_IR_right);
+
+        if (IR_left == LOW && IR_right == LOW) {      // If no line is detected
+          move_servos(baseSpeed, 0);
+        } else if (IR_left == HIGH && IR_right == LOW) { // if line is detected by left side
+          move_servos(baseSpeed, -alpha);
+        } else if (IR_left == LOW && IR_right == HIGH) {    // if line is detected by right side
+          move_servos(baseSpeed, alpha);
+        }
+        break;
+      case 'B':
+        move_servos(0, 0);
+        break;
+      case 'R':
+        move_servos(0, -1);
+        break;
+      case 'L':
+        move_servos(0, 1);
+        break;
+    }
+  }
+  else {
+    move_servos(0, 0);
+    //stuur bericht dat hij de volgende berekening verwacht
+  }
 }
