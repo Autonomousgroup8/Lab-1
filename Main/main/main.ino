@@ -23,6 +23,17 @@ int IR_left = 0;
 int IR_right = 0;
 float baseSpeed = 0.05;
 float ACCSpeed = 0.05;
+int driveTime = 0;
+int beta = 0.002;
+int communication = 0;
+int curTime = 0;
+int ID = 1;
+char Direction;
+char DurationChar;
+int Duration = 0;
+int startTime = 0;
+bool commandExcecuted = false;
+int passedTime = 0;
 
 //Variables for communication
 int iter = 0;
@@ -162,6 +173,7 @@ void loop()
   if (passedTime < Duration && commandExcecuted != true) {
     switch (Direction) {
       case 'F':
+        Serial.print("Forward");
         move_servos(baseSpeed, 0);
         baseSpeed = ACC();                          //determine speed with Active cruise control.
 
@@ -171,18 +183,21 @@ void loop()
         if (IR_left == LOW && IR_right == LOW) {      // If no line is detected
           move_servos(baseSpeed, 0);
         } else if (IR_left == HIGH && IR_right == LOW) { // if line is detected by left side
-          move_servos(baseSpeed, -alpha);
+          move_servos(baseSpeed, -1);
         } else if (IR_left == LOW && IR_right == HIGH) {    // if line is detected by right side
-          move_servos(baseSpeed, alpha);
+          move_servos(baseSpeed, 1);
         }
         break;
       case 'B':
+        Serial.print("Break");
         move_servos(0, 0);
         break;
       case 'R':
+        Serial.print("Right");
         move_servos(0, -1);
         break;
       case 'L':
+        Serial.print("Left");
         move_servos(0, 1);
         break;
     }
