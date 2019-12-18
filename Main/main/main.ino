@@ -21,15 +21,8 @@ const int pin_IR_right = A1;
 int incomingByte = 0;
 int IR_left = 0;
 int IR_right = 0;
-int turnleft = 0;
-int turnright = 0;
-int rechtdoor = 0;
-int prevCross = 0;
-const float alpha = 0.3;
-const float beta = 0.002;
 float baseSpeed = 0.05;
 float ACCSpeed = 0.05;
-int headTurn = 0;
 
 //Variables for communication
 int iter = 0;
@@ -38,14 +31,11 @@ char endMarker = '\n';
 const byte numChars = 32;
 char receivedChars[numChars];
 
-
-
 //Zigbee implementation
 #define SELF     43
 #define PAN_ID           "A008"
 #define CHANNEL_ID       "0F"
 bool waitMode = false;
-int crossingsPassed = 0;
 
 // some macros needed for the xbee_init function. Do not touch :-).
 #define STRING(name) #name
