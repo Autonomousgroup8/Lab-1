@@ -22,6 +22,7 @@ int incomingByte = 0;
 int IR_left = 0;
 int IR_right = 0;
 float baseSpeed = 0.05;
+float correction = 0.025;
 float ACCSpeed = 0.05;
 int driveTime = 0;
 int beta = 0.002;
@@ -183,7 +184,7 @@ void loop()
         IR_right = digitalRead(pin_IR_right);
 
         if (IR_left == LOW && IR_right == LOW) {      // If no line is detected
-          move_servos(baseSpeed, 0);
+          move_servos(baseSpeed, correction);
         } else if (IR_left == HIGH && IR_right == LOW) { // if line is detected by left side
           move_servos(baseSpeed, -0.05);
         } else if (IR_left == LOW && IR_right == HIGH) {    // if line is detected by right side
