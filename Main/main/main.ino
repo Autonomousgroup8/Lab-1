@@ -18,6 +18,8 @@ const int pin_Servo_head = 11;
 const int pin_IR_left = A0;
 const int pin_IR_right = A1;
 
+int ForwardTime[10] = {200, 500, 1000, 1500, 2000, 3000, 4000, 5000, 7500, 10000};
+
 int incomingByte = 0;
 int IR_left = 0;
 int IR_right = 0;
@@ -35,7 +37,7 @@ int Duration = 0;
 int startTime = 0;
 bool commandExcecuted = false;
 int passedTime = 0;
-
+int test;
 //Variables for communication
 int iter = 0;
 char receivedID = 0;
@@ -164,9 +166,9 @@ void loop()
       Direction = receivedChars[0];
       Serial.print("Richting");
       Serial.print(Direction);
-      DurationChar = receivedChars[1];
-      //      Serial.print(DurationChar);
-      Duration = determineDuration(DurationChar);
+      DurationChar = receivedChars[1]; 
+      Duration = ForwardTime[DurationChar-48];
+      Serial.print(Duration);
       startTime = curTime;
       commandExcecuted = false;
     }
