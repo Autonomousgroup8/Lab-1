@@ -27,7 +27,7 @@ int driveTime = 0;
 int beta = 0.002;
 int communication = 0;
 int curTime = 0;
-int ID = 1;
+char ID = 0;
 char Direction;
 char DurationChar;
 int Duration = 0;
@@ -37,13 +37,13 @@ int passedTime = 0;
 
 //Variables for communication
 int iter = 0;
-int receivedID = 0;
+char receivedID = 0;
 char endMarker = '\n';
 const byte numChars = 32;
 char receivedChars[numChars];
 
 //Zigbee implementation
-#define SELF     48
+#define SELF     53
 #define PAN_ID           "A008"
 #define CHANNEL_ID       "0F"
 
@@ -77,7 +77,7 @@ void move_servos(float baseSpeed, float offset) {
 
 int getMessage() {
   //Enter messages using the format 'xIDMessage', where x is either 0 for debug or 1 for real message, ID is the ID of the sending robot and then the Message
-  if (Serial.available() > 0) {               //A message is available
+  if (Serial.available() > 0) { //A message is available
     int startBit = Serial.read();
     switch (startBit) {
       case 48 :                           //48 = ascii for 0, debug message
@@ -86,15 +86,21 @@ int getMessage() {
         break;
 
       case 49:                            //49 = ascii for 1, this message is relevant
-        receivedID = Serial.read();
+        if (Serial.available()) {
+          receivedID = Serial.read();
+          Serial.print("IDsaved");
+        }
+        //        Serial.print(receivedID);
         for (int j = 0; j < numChars; j++) {
           receivedChars[j] = ' ';
         }
         char tempChar;
         iter = -1;
-
+        //        Serial.print("TempLezen0");
         while (Serial.available() > 0) {
           tempChar = Serial.read();
+          //          Serial.print("TempLezen1");
+          //          Serial.print(tempChar);
           iter++;
           if (tempChar != endMarker && iter < numChars) {
             receivedChars[iter] = tempChar;
@@ -104,6 +110,7 @@ int getMessage() {
           }
         }
         receivedChars[iter + 1] = '\0';
+
         return 2;                           //Return 2 because it is a relevant message.
         break;
 
@@ -155,18 +162,23 @@ float ACC() {                                                   //active cruise 
 
 void loop()
 {
+
   communication = getMessage();
   curTime = millis();
   if (communication == 2) {
+    Serial.print("Check");
     //Relevant message, listen, Save received chars in new string
-    ID = receivedChars[1];
+    ID = receivedID;
+    Serial.print(ID);
     if (SELF == ID) {   //check if message is for you
+      Serial.print("ForMe");
       Direction = receivedChars[2];
+      //      Serial.print(Direction);
       DurationChar = receivedChars[3];
+      //      Serial.print(DurationChar);
       Duration = determineDuration(DurationChar);
       startTime = curTime;
       commandExcecuted = false;
-      Serial.print(Direction);
     }
   }
   passedTime = curTime - startTime;
