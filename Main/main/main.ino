@@ -43,7 +43,7 @@ const byte numChars = 32;
 char receivedChars[numChars];
 
 //Zigbee implementation
-#define SELF     43
+#define SELF     48
 #define PAN_ID           "A008"
 #define CHANNEL_ID       "0F"
 
@@ -166,6 +166,7 @@ void loop()
       Duration = determineDuration(DurationChar);
       startTime = curTime;
       commandExcecuted = false;
+      Serial.print(Direction);
     }
   }
   passedTime = curTime - startTime;
