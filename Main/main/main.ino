@@ -104,7 +104,6 @@ int getMessage() {
           }
         }
         receivedChars[iter + 1] = '\0';
-
         return 2;                           //Return 2 because it is a relevant message.
         break;
 
@@ -186,9 +185,9 @@ void loop()
         if (IR_left == LOW && IR_right == LOW) {      // If no line is detected
           move_servos(baseSpeed, 0);
         } else if (IR_left == HIGH && IR_right == LOW) { // if line is detected by left side
-          move_servos(baseSpeed, -1);
+          move_servos(baseSpeed, -0.05);
         } else if (IR_left == LOW && IR_right == HIGH) {    // if line is detected by right side
-          move_servos(baseSpeed, 1);
+          move_servos(baseSpeed, 0.05);
         }
         break;
       case 'B':
@@ -197,15 +196,14 @@ void loop()
         break;
       case 'R':
         Serial.print("Right");
-        move_servos(0, -1);
+        move_servos(0, 0.05);
         break;
       case 'L':
         Serial.print("Left");
-        move_servos(0, 1);
+        move_servos(0, -0.05);
         break;
     }
-  }
-  else {
+  }  else {
     move_servos(0, 0);
     //stuur bericht dat hij de volgende berekening verwacht
   }
