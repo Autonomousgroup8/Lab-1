@@ -82,14 +82,15 @@ int getMessage() {
     switch (startBit) {
       case 48 :                           //48 = ascii for 0, debug message
         while (Serial.read() >= 0) { }
+        Serial.print("Fuck");
         return 1;                       //return a 1 that indicates that it is a debug message
         break;
 
       case 49:                            //49 = ascii for 1, this message is relevant
-        if (Serial.available()) {
+//        if (Serial.available()>0) {
           receivedID = Serial.read();
           Serial.print("IDsaved");
-        }
+//        } 
         //        Serial.print(receivedID);
         for (int j = 0; j < numChars; j++) {
           receivedChars[j] = ' ';
