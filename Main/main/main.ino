@@ -79,29 +79,22 @@ int getMessage() {
   //Enter messages using the format 'xIDMessage', where x is either 0 for debug or 1 for real message, ID is the ID of the sending robot and then the Message
   if (Serial.available() > 0) { //A message is available
     int startBit = Serial.read();
+    delay(5);
     switch (startBit) {
       case 48 :                           //48 = ascii for 0, debug message
         while (Serial.read() >= 0) { }
-        Serial.print("Fuck");
         return 1;                       //return a 1 that indicates that it is a debug message
         break;
 
       case 49:                            //49 = ascii for 1, this message is relevant
-//        if (Serial.available()>0) {
-          receivedID = Serial.read();
-          Serial.print("IDsaved");
-//        } 
-        //        Serial.print(receivedID);
+        receivedID = Serial.read();
         for (int j = 0; j < numChars; j++) {
           receivedChars[j] = ' ';
         }
         char tempChar;
         iter = -1;
-        //        Serial.print("TempLezen0");
         while (Serial.available() > 0) {
           tempChar = Serial.read();
-          //          Serial.print("TempLezen1");
-          //          Serial.print(tempChar);
           iter++;
           if (tempChar != endMarker && iter < numChars) {
             receivedChars[iter] = tempChar;
@@ -163,19 +156,15 @@ float ACC() {                                                   //active cruise 
 
 void loop()
 {
-
   communication = getMessage();
   curTime = millis();
-  if (communication == 2) {
-    Serial.print("Check");
-    //Relevant message, listen, Save received chars in new string
+  if (communication == 2) { //Relevant message, listen, Save received chars in new string
     ID = receivedID;
-    Serial.print(ID);
     if (SELF == ID) {   //check if message is for you
-      Serial.print("ForMe");
-      Direction = receivedChars[2];
-      //      Serial.print(Direction);
-      DurationChar = receivedChars[3];
+      Direction = receivedChars[0];
+      Serial.print("Richting");
+      Serial.print(Direction);
+      DurationChar = receivedChars[1];
       //      Serial.print(DurationChar);
       Duration = determineDuration(DurationChar);
       startTime = curTime;
