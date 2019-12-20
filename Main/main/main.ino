@@ -19,6 +19,7 @@ const int pin_IR_left = A0;
 const int pin_IR_right = A1;
 
 int ForwardTime[10] = {200, 500, 1000, 1500, 2000, 3000, 4000, 5000, 7500, 10000};
+int TurnTime[10] = {1600, 1650, 1675, 1700, 1715, 1725, 1735, 1750, 1775, 1800};
 
 int incomingByte = 0;
 int IR_left = 0;
@@ -167,8 +168,12 @@ void loop()
       Serial.print("Richting");
       Serial.print(Direction);
       DurationChar = receivedChars[1]; 
-      Duration = ForwardTime[DurationChar-48];
-      Serial.print(Duration);
+      if(Direction == 'F'){
+        Duration = ForwardTime[DurationChar-48];
+        }else{
+        Duration = TurnTime[DurationChar-48];
+          }
+      
       startTime = curTime;
       commandExcecuted = false;
     }
@@ -188,9 +193,9 @@ void loop()
         if (IR_left == LOW && IR_right == LOW) {      // If no line is detected
           move_servos(baseSpeed, correction);
         } else if (IR_left == HIGH && IR_right == LOW) { // if line is detected by left side
-          move_servos(baseSpeed, -0.05);
+          move_servos(baseSpeed, -0.05+correction);
         } else if (IR_left == LOW && IR_right == HIGH) {    // if line is detected by right side
-          move_servos(baseSpeed, 0.05);
+          move_servos(baseSpeed, 0.05+correction);
         }
         break;
       case 'B':
