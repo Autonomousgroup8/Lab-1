@@ -18,8 +18,9 @@ const int pin_Servo_head = 11;
 const int pin_IR_left = A0;
 const int pin_IR_right = A1;
 
-int ForwardTime[10] = {200, 500, 1000, 1500, 2000, 3000, 4000, 5000, 7500, 10000};
-int TurnTime[10] = {1600, 1650, 1675, 1700, 1715, 1725, 1735, 1750, 1775, 1800};
+int ForwardTime[10] = {200, 500, 1000, 1500, 2000, 3000, 4000, 5000, 7500, 10000}; //Distance (Cm) {2,5,10,15,20,30,40,50,75,100}
+int TurnLeftTime[10] = {19, 47, 94, 142, 189, 283, 425, 850, 1275, 1700}; //Degrees {2,5,10,15,20,30,45,90,135,180}
+int TurnRightTime[10] = {1600, 1650, 1675, 1700, 1725, 1750, 1775, 0 ,0 ,0}; //19, 47, 94, 142, 189, 283, 425, 850, 1275, 1700}; //Degrees {2,5,10,15,20,30,45,90,135,180}
 
 int incomingByte = 0;
 int IR_left = 0;
@@ -170,10 +171,11 @@ void loop()
       DurationChar = receivedChars[1]; 
       if(Direction == 'F'){
         Duration = ForwardTime[DurationChar-48];
-        }else{
-        Duration = TurnTime[DurationChar-48];
-          }
-      
+        }else if (Direction == 'L'){
+        Duration = TurnLeftTime[DurationChar-48];
+          }else if(Direction == 'R'){
+            Duration = TurnRightTime[DurationChar-48];
+            }      
       startTime = curTime;
       commandExcecuted = false;
     }
@@ -183,10 +185,10 @@ void loop()
   if (passedTime < Duration && commandExcecuted != true) {
     switch (Direction) {
       case 'F':
-        Serial.print("Forward");
-        move_servos(baseSpeed, 0);
+        Serial.print("Forward");        
         baseSpeed = ACC();                          //determine speed with Active cruise control.
-
+        move_servos(baseSpeed, 0);
+        
         IR_left = digitalRead(pin_IR_left);         // Read from IR sensors
         IR_right = digitalRead(pin_IR_right);
 
