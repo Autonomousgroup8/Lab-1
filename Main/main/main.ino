@@ -26,7 +26,7 @@ int incomingByte = 0;
 int IR_left = 0;
 int IR_right = 0;
 float baseSpeed = 0.05;
-float correction = 0.025;
+float correction = 0;
 float ACCSpeed = 0.05;
 int driveTime = 0;
 int beta = 0.002;
@@ -186,8 +186,9 @@ void loop()
     switch (Direction) {
       case 'F':
 //        Serial.print("Forward");        
+//        move_servos(baseSpeed, 0);
         baseSpeed = ACC();                          //determine speed with Active cruise control.
-        move_servos(baseSpeed, 0);
+        
         
         IR_left = digitalRead(pin_IR_left);         // Read from IR sensors
         IR_right = digitalRead(pin_IR_right);
@@ -195,9 +196,9 @@ void loop()
         if (IR_left == LOW && IR_right == LOW) {      // If no line is detected
           move_servos(baseSpeed, correction);
         } else if (IR_left == HIGH && IR_right == LOW) { // if line is detected by left side
-          move_servos(baseSpeed, -0.05+correction);
+          move_servos(baseSpeed, 0.1);
         } else if (IR_left == LOW && IR_right == HIGH) {    // if line is detected by right side
-          move_servos(baseSpeed, 0.05+correction);
+          move_servos(baseSpeed, -0.1);
         }
         break;
       case 'B':
